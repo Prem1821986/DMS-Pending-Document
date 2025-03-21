@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://magma.newgen.com/" targetNamespace="http://magma.newgen.com/" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="NGChangeDocumentProperty" type="tns:NGChangeDocumentProperty" />
+  <xs:element name="NGChangeDocumentPropertyResponse" type="tns:NGChangeDocumentPropertyResponse" />
+  <xs:element name="NGDeleteDocument" type="tns:NGDeleteDocument" />
+  <xs:element name="NGDeleteDocumentResponse" type="tns:NGDeleteDocumentResponse" />
+  <xs:element name="addNGDocumentExt" type="tns:addNGDocumentExt" />
+  <xs:element name="addNGDocumentExtResponse" type="tns:addNGDocumentExtResponse" />
+  <xs:element name="searchDocumentExt" type="tns:searchDocumentExt" />
+  <xs:element name="searchDocumentExtResponse" type="tns:searchDocumentExtResponse" />
+  <xs:complexType name="addNGDocumentExt">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="InputXml" type="xs:string" />
+      <xs:element minOccurs="0" name="User_Name" type="xs:string" />
+      <xs:element minOccurs="0" name="Password" type="xs:string" />
+      <xs:element minOccurs="0" name="DocPath" type="xs:string" />
+      <xs:element minOccurs="0" name="FolderName" type="xs:string" />
+      <xs:element minOccurs="0" name="FolderHierarchy" type="xs:string" />
+      <xs:element minOccurs="0" name="DataClassName" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="addNGDocumentExtResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NGChangeDocumentProperty">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Inputxml" type="xs:string" />
+      <xs:element minOccurs="0" name="User_Name" type="xs:string" />
+      <xs:element minOccurs="0" name="Password" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NGChangeDocumentPropertyResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NGDeleteDocument">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Inputxml" type="xs:string" />
+      <xs:element minOccurs="0" name="User_Name" type="xs:string" />
+      <xs:element minOccurs="0" name="Password" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NGDeleteDocumentResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="searchDocumentExt">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="InputXml" type="xs:string" />
+      <xs:element minOccurs="0" name="User_Name" type="xs:string" />
+      <xs:element minOccurs="0" name="Password" type="xs:string" />
+      <xs:element minOccurs="0" name="DataClassName" type="xs:string" />
+      <xs:element name="FTS" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="searchDocumentExtResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="return" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

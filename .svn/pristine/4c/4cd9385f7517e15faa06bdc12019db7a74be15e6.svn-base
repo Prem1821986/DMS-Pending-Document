@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:ns="http://magma.newgen.com" xmlns:ns1="http://org.apache.axis2/xsd" targetNamespace="http://magma.newgen.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation>DMSWebService_Raj</wsdl:documentation>
+  <wsdl:types>
+    <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://magma.newgen.com">
+      <xs:element name="NGChangeDocumentProperty">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="Inputxml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NGChangeDocumentPropertyResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NGDeleteDocument">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="Inputxml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NGDeleteDocumentResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="addNGDocumentExt">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="InputXml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="DocPath" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="FolderName" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="FolderHierarchy" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="DataClassName" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="addNGDocumentExtResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="searchDocumentExt">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="InputXml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="DataClassName" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="FTS" type="xs:boolean" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="searchDocumentExtResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="NGDeleteDocumentRequest">
+    <wsdl:part name="parameters" element="ns:NGDeleteDocument" />
+  </wsdl:message>
+  <wsdl:message name="NGDeleteDocumentResponse">
+    <wsdl:part name="parameters" element="ns:NGDeleteDocumentResponse" />
+  </wsdl:message>
+  <wsdl:message name="NGChangeDocumentPropertyRequest">
+    <wsdl:part name="parameters" element="ns:NGChangeDocumentProperty" />
+  </wsdl:message>
+  <wsdl:message name="NGChangeDocumentPropertyResponse">
+    <wsdl:part name="parameters" element="ns:NGChangeDocumentPropertyResponse" />
+  </wsdl:message>
+  <wsdl:message name="searchDocumentExtRequest">
+    <wsdl:part name="parameters" element="ns:searchDocumentExt" />
+  </wsdl:message>
+  <wsdl:message name="searchDocumentExtResponse">
+    <wsdl:part name="parameters" element="ns:searchDocumentExtResponse" />
+  </wsdl:message>
+  <wsdl:message name="addNGDocumentExtRequest">
+    <wsdl:part name="parameters" element="ns:addNGDocumentExt" />
+  </wsdl:message>
+  <wsdl:message name="addNGDocumentExtResponse">
+    <wsdl:part name="parameters" element="ns:addNGDocumentExtResponse" />
+  </wsdl:message>
+  <wsdl:portType name="DMSWebService_RajPortType">
+    <wsdl:operation name="NGDeleteDocument">
+      <wsdl:input wsaw:Action="urn:NGDeleteDocument" message="ns:NGDeleteDocumentRequest" />
+      <wsdl:output wsaw:Action="urn:NGDeleteDocumentResponse" message="ns:NGDeleteDocumentResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="NGChangeDocumentProperty">
+      <wsdl:input wsaw:Action="urn:NGChangeDocumentProperty" message="ns:NGChangeDocumentPropertyRequest" />
+      <wsdl:output wsaw:Action="urn:NGChangeDocumentPropertyResponse" message="ns:NGChangeDocumentPropertyResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="searchDocumentExt">
+      <wsdl:input wsaw:Action="urn:searchDocumentExt" message="ns:searchDocumentExtRequest" />
+      <wsdl:output wsaw:Action="urn:searchDocumentExtResponse" message="ns:searchDocumentExtResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="addNGDocumentExt">
+      <wsdl:input wsaw:Action="urn:addNGDocumentExt" message="ns:addNGDocumentExtRequest" />
+      <wsdl:output wsaw:Action="urn:addNGDocumentExtResponse" message="ns:addNGDocumentExtResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DMSWebService_RajSoap11Binding" type="ns:DMSWebService_RajPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="NGDeleteDocument">
+      <soap:operation soapAction="urn:NGDeleteDocument" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="NGChangeDocumentProperty">
+      <soap:operation soapAction="urn:NGChangeDocumentProperty" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="searchDocumentExt">
+      <soap:operation soapAction="urn:searchDocumentExt" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addNGDocumentExt">
+      <soap:operation soapAction="urn:addNGDocumentExt" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="DMSWebService_RajSoap12Binding" type="ns:DMSWebService_RajPortType">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="NGDeleteDocument">
+      <soap12:operation soapAction="urn:NGDeleteDocument" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="NGChangeDocumentProperty">
+      <soap12:operation soapAction="urn:NGChangeDocumentProperty" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="searchDocumentExt">
+      <soap12:operation soapAction="urn:searchDocumentExt" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addNGDocumentExt">
+      <soap12:operation soapAction="urn:addNGDocumentExt" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="DMSWebService_RajHttpBinding" type="ns:DMSWebService_RajPortType">
+    <http:binding verb="POST" />
+    <wsdl:operation name="NGDeleteDocument">
+      <http:operation location="DMSWebService_Raj/NGDeleteDocument" />
+      <wsdl:input>
+        <mime:content part="NGDeleteDocument" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="NGDeleteDocument" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="NGChangeDocumentProperty">
+      <http:operation location="DMSWebService_Raj/NGChangeDocumentProperty" />
+      <wsdl:input>
+        <mime:content part="NGChangeDocumentProperty" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="NGChangeDocumentProperty" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="searchDocumentExt">
+      <http:operation location="DMSWebService_Raj/searchDocumentExt" />
+      <wsdl:input>
+        <mime:content part="searchDocumentExt" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="searchDocumentExt" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addNGDocumentExt">
+      <http:operation location="DMSWebService_Raj/addNGDocumentExt" />
+      <wsdl:input>
+        <mime:content part="addNGDocumentExt" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="addNGDocumentExt" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DMSWebService_Raj">
+    <wsdl:port name="DMSWebService_RajHttpSoap11Endpoint" binding="ns:DMSWebService_RajSoap11Binding">
+      <soap:address location="http://10.70.236.75:8080/axis2/services/DMSWebService_Raj.DMSWebService_RajHttpSoap11Endpoint/" />
+    </wsdl:port>
+    <wsdl:port name="DMSWebService_RajHttpSoap12Endpoint" binding="ns:DMSWebService_RajSoap12Binding">
+      <soap12:address location="http://10.70.236.75:8080/axis2/services/DMSWebService_Raj.DMSWebService_RajHttpSoap12Endpoint/" />
+    </wsdl:port>
+    <wsdl:port name="DMSWebService_RajHttpEndpoint" binding="ns:DMSWebService_RajHttpBinding">
+      <http:address location="http://10.70.236.75:8080/axis2/services/DMSWebService_Raj.DMSWebService_RajHttpEndpoint/" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

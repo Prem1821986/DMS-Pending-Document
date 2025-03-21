@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="ThickClientService" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports">
+      <xsd:import schemaLocation="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/System.Data" />
+      <xsd:import schemaLocation="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd3" />
+      <xsd:import schemaLocation="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd4" namespace="http://schemas.datacontract.org/2004/07/E_Archival_DMS_ThickClient_Service" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IThickClientService_Login_InputMessage">
+    <wsdl:part name="parameters" element="tns:Login" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_Login_OutputMessage">
+    <wsdl:part name="parameters" element="tns:LoginResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDepartments_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDepartments" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDepartments_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDepartmentsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetSubDepartments_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetSubDepartments" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetSubDepartments_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetSubDepartmentsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDocumentType_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDocumentType" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDocumentType_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDocumentTypeResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDocumentDetails_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDocumentDetails" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDocumentDetails_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDocumentDetailsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetColumns_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetColumns" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetColumns_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetColumnsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetMandatoryColumns_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetMandatoryColumns" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetMandatoryColumns_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetMandatoryColumnsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_AddMetadata_InputMessage">
+    <wsdl:part name="parameters" element="tns:AddMetadata" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_AddMetadata_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AddMetadataResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_UpdateDMSDocumentID_InputMessage">
+    <wsdl:part name="parameters" element="tns:UpdateDMSDocumentID" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_UpdateDMSDocumentID_OutputMessage">
+    <wsdl:part name="parameters" element="tns:UpdateDMSDocumentIDResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDocTtypeId_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDocTtypeId" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDocTtypeId_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDocTtypeIdResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDMSDocToUpload_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDMSDocToUpload" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDMSDocToUpload_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDMSDocToUploadResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_AddUpdateDMSDocumentDetails_InputMessage">
+    <wsdl:part name="parameters" element="tns:AddUpdateDMSDocumentDetails" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_AddUpdateDMSDocumentDetails_OutputMessage">
+    <wsdl:part name="parameters" element="tns:AddUpdateDMSDocumentDetailsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDMSDocumentDetails_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetDMSDocumentDetails" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_GetDMSDocumentDetails_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetDMSDocumentDetailsResponse" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_Master_Config_InputMessage">
+    <wsdl:part name="parameters" element="tns:Master_Config" />
+  </wsdl:message>
+  <wsdl:message name="IThickClientService_Master_Config_OutputMessage">
+    <wsdl:part name="parameters" element="tns:Master_ConfigResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IThickClientService">
+    <wsdl:operation name="Login">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/Login" message="tns:IThickClientService_Login_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/LoginResponse" message="tns:IThickClientService_Login_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetDepartments" message="tns:IThickClientService_GetDepartments_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetDepartmentsResponse" message="tns:IThickClientService_GetDepartments_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSubDepartments">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetSubDepartments" message="tns:IThickClientService_GetSubDepartments_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetSubDepartmentsResponse" message="tns:IThickClientService_GetSubDepartments_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDocumentType">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetDocumentType" message="tns:IThickClientService_GetDocumentType_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetDocumentTypeResponse" message="tns:IThickClientService_GetDocumentType_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDocumentDetails">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetDocumentDetails" message="tns:IThickClientService_GetDocumentDetails_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetDocumentDetailsResponse" message="tns:IThickClientService_GetDocumentDetails_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetColumns">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetColumns" message="tns:IThickClientService_GetColumns_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetColumnsResponse" message="tns:IThickClientService_GetColumns_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMandatoryColumns">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetMandatoryColumns" message="tns:IThickClientService_GetMandatoryColumns_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetMandatoryColumnsResponse" message="tns:IThickClientService_GetMandatoryColumns_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AddMetadata">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/AddMetadata" message="tns:IThickClientService_AddMetadata_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/AddMetadataResponse" message="tns:IThickClientService_AddMetadata_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateDMSDocumentID">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/UpdateDMSDocumentID" message="tns:IThickClientService_UpdateDMSDocumentID_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/UpdateDMSDocumentIDResponse" message="tns:IThickClientService_UpdateDMSDocumentID_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDocTtypeId">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetDocTtypeId" message="tns:IThickClientService_GetDocTtypeId_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetDocTtypeIdResponse" message="tns:IThickClientService_GetDocTtypeId_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDMSDocToUpload">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetDMSDocToUpload" message="tns:IThickClientService_GetDMSDocToUpload_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetDMSDocToUploadResponse" message="tns:IThickClientService_GetDMSDocToUpload_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="AddUpdateDMSDocumentDetails">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/AddUpdateDMSDocumentDetails" message="tns:IThickClientService_AddUpdateDMSDocumentDetails_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/AddUpdateDMSDocumentDetailsResponse" message="tns:IThickClientService_AddUpdateDMSDocumentDetails_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDMSDocumentDetails">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/GetDMSDocumentDetails" message="tns:IThickClientService_GetDMSDocumentDetails_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/GetDMSDocumentDetailsResponse" message="tns:IThickClientService_GetDMSDocumentDetails_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Master_Config">
+      <wsdl:input wsaw:Action="http://tempuri.org/IThickClientService/Master_Config" message="tns:IThickClientService_Master_Config_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IThickClientService/Master_ConfigResponse" message="tns:IThickClientService_Master_Config_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BasicHttpBinding_IThickClientService" type="tns:IThickClientService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Login">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/Login" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetDepartments" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSubDepartments">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetSubDepartments" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDocumentType">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetDocumentType" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDocumentDetails">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetDocumentDetails" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetColumns">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetColumns" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMandatoryColumns">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetMandatoryColumns" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddMetadata">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/AddMetadata" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateDMSDocumentID">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/UpdateDMSDocumentID" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDocTtypeId">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetDocTtypeId" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDMSDocToUpload">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetDMSDocToUpload" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddUpdateDMSDocumentDetails">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/AddUpdateDMSDocumentDetails" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDMSDocumentDetails">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/GetDMSDocumentDetails" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Master_Config">
+      <soap:operation soapAction="http://tempuri.org/IThickClientService/Master_Config" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ThickClientService">
+    <wsdl:port name="BasicHttpBinding_IThickClientService" binding="tns:BasicHttpBinding_IThickClientService">
+      <soap:address location="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

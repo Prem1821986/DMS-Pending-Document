@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="DMS_WindowsService.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DMS_WindowsService_DMSWebService_DMSWebService_Raj" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://10.70.236.75:8080/axis2/services/DMSWebService_Raj.DMSWebService_RajHttpSoap11Endpoint/</Value>
+    </Setting>
+    <Setting Name="DMS_WindowsService_FTSUpdate_DMSUpdateDocument" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://10.70.236.75:8080/axis2/services/DMSUpdateDocument.DMSUpdateDocumentHttpSoap11Endpoint/</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

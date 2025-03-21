@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="3b3eaa4d-2e7d-4528-8fa0-05de2bd8eb7a" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="ThickClientService1.disco" MetadataType="Disco" ID="d1b8f729-99b5-4f3a-bc1e-3148e47adb7d" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?disco" />
+    <MetadataFile FileName="ThickClientService5.xsd" MetadataType="Schema" ID="43c5ca0b-21f3-49bb-9b1b-183d7cbd2ced" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd0" />
+    <MetadataFile FileName="ThickClientService51.xsd" MetadataType="Schema" ID="e419be40-5d5f-4095-9c62-18edf8de1787" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd2" />
+    <MetadataFile FileName="ThickClientService52.xsd" MetadataType="Schema" ID="31bdccb3-9b00-49f7-98b2-d5f974d7edfe" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd3" />
+    <MetadataFile FileName="ThickClientService53.xsd" MetadataType="Schema" ID="c68b377d-9355-4a47-a965-5716bda88fb2" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd4" />
+    <MetadataFile FileName="ThickClientService1.wsdl" MetadataType="Wsdl" ID="6e048f64-b398-4272-8f7e-d4cd93d3950d" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?wsdl" />
+    <MetadataFile FileName="ThickClientService54.xsd" MetadataType="Schema" ID="98f55930-2bab-4f18-bdc2-52694d662886" SourceId="1" SourceUrl="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc?xsd=xsd1" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

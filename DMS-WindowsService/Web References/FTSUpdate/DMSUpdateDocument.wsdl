@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:ns="http://magma.newgen.com" xmlns:ns1="http://org.apache.axis2/xsd" targetNamespace="http://magma.newgen.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation>DMSUpdateDocument</wsdl:documentation>
+  <wsdl:types>
+    <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://magma.newgen.com">
+      <xs:element name="updateDataclass">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="Inputxml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="updateDataclassResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="updateDocument">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="Inputxml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="updateDocumentResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="updateDocumentAndDataclass">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="Inputxml" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="User_Name" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="Password" nillable="true" type="xs:string" />
+            <xs:element minOccurs="0" name="DataClassName" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="updateDocumentAndDataclassResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" name="return" nillable="true" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="updateDocumentRequest">
+    <wsdl:part name="parameters" element="ns:updateDocument" />
+  </wsdl:message>
+  <wsdl:message name="updateDocumentResponse">
+    <wsdl:part name="parameters" element="ns:updateDocumentResponse" />
+  </wsdl:message>
+  <wsdl:message name="updateDataclassRequest">
+    <wsdl:part name="parameters" element="ns:updateDataclass" />
+  </wsdl:message>
+  <wsdl:message name="updateDataclassResponse">
+    <wsdl:part name="parameters" element="ns:updateDataclassResponse" />
+  </wsdl:message>
+  <wsdl:message name="updateDocumentAndDataclassRequest">
+    <wsdl:part name="parameters" element="ns:updateDocumentAndDataclass" />
+  </wsdl:message>
+  <wsdl:message name="updateDocumentAndDataclassResponse">
+    <wsdl:part name="parameters" element="ns:updateDocumentAndDataclassResponse" />
+  </wsdl:message>
+  <wsdl:portType name="DMSUpdateDocumentPortType">
+    <wsdl:operation name="updateDocument">
+      <wsdl:input wsaw:Action="urn:updateDocument" message="ns:updateDocumentRequest" />
+      <wsdl:output wsaw:Action="urn:updateDocumentResponse" message="ns:updateDocumentResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="updateDataclass">
+      <wsdl:input wsaw:Action="urn:updateDataclass" message="ns:updateDataclassRequest" />
+      <wsdl:output wsaw:Action="urn:updateDataclassResponse" message="ns:updateDataclassResponse" />
+    </wsdl:operation>
+    <wsdl:operation name="updateDocumentAndDataclass">
+      <wsdl:input wsaw:Action="urn:updateDocumentAndDataclass" message="ns:updateDocumentAndDataclassRequest" />
+      <wsdl:output wsaw:Action="urn:updateDocumentAndDataclassResponse" message="ns:updateDocumentAndDataclassResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="DMSUpdateDocumentSoap11Binding" type="ns:DMSUpdateDocumentPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="updateDocument">
+      <soap:operation soapAction="urn:updateDocument" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateDataclass">
+      <soap:operation soapAction="urn:updateDataclass" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateDocumentAndDataclass">
+      <soap:operation soapAction="urn:updateDocumentAndDataclass" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="DMSUpdateDocumentSoap12Binding" type="ns:DMSUpdateDocumentPortType">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="updateDocument">
+      <soap12:operation soapAction="urn:updateDocument" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateDataclass">
+      <soap12:operation soapAction="urn:updateDataclass" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateDocumentAndDataclass">
+      <soap12:operation soapAction="urn:updateDocumentAndDataclass" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="DMSUpdateDocumentHttpBinding" type="ns:DMSUpdateDocumentPortType">
+    <http:binding verb="POST" />
+    <wsdl:operation name="updateDocument">
+      <http:operation location="DMSUpdateDocument/updateDocument" />
+      <wsdl:input>
+        <mime:content part="updateDocument" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="updateDocument" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateDataclass">
+      <http:operation location="DMSUpdateDocument/updateDataclass" />
+      <wsdl:input>
+        <mime:content part="updateDataclass" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="updateDataclass" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateDocumentAndDataclass">
+      <http:operation location="DMSUpdateDocument/updateDocumentAndDataclass" />
+      <wsdl:input>
+        <mime:content part="updateDocumentAndDataclass" type="text/xml" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="updateDocumentAndDataclass" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="DMSUpdateDocument">
+    <wsdl:port name="DMSUpdateDocumentHttpSoap11Endpoint" binding="ns:DMSUpdateDocumentSoap11Binding">
+      <soap:address location="http://10.70.236.75:8080/axis2/services/DMSUpdateDocument.DMSUpdateDocumentHttpSoap11Endpoint/" />
+    </wsdl:port>
+    <wsdl:port name="DMSUpdateDocumentHttpSoap12Endpoint" binding="ns:DMSUpdateDocumentSoap12Binding">
+      <soap12:address location="http://10.70.236.75:8080/axis2/services/DMSUpdateDocument.DMSUpdateDocumentHttpSoap12Endpoint/" />
+    </wsdl:port>
+    <wsdl:port name="DMSUpdateDocumentHttpEndpoint" binding="ns:DMSUpdateDocumentHttpBinding">
+      <http:address location="http://10.70.236.75:8080/axis2/services/DMSUpdateDocument.DMSUpdateDocumentHttpEndpoint/" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

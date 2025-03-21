@@ -1,0 +1,78 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DMS.Business
+{
+    public class UploadFile
+    {
+        #region properties
+
+
+       
+        public Int32 UploadParamID { get; set; }
+
+       
+        public Int32 selDept { get; set; }
+
+       
+        public Int32 selSubDept { get; set; }
+
+       
+        public Int64 selDocType { get; set; }
+
+       
+        public List<UploadForms> ControlsList { get; set; }
+
+       
+        public Int64? MainDocID { get; set; }
+
+       
+        public string FileName { get; set; }
+
+       
+        public string ActualFileName { get; set; }
+
+       
+        public string FilePath { get; set; }
+
+       
+        public string FileSize { get; set; }
+
+       
+        public string FileContentType { get; set; }
+
+       
+        public bool isMove { get; set; }
+
+       
+        public bool isDownload { get; set; }
+
+       
+        public bool isPreview { get; set; }
+
+       
+        public string DepartmentName { get; set; }
+
+       
+        public string DocumentType { get; set; }
+
+       
+        public string Param1 { get; set; }
+
+       
+        public Int32 DMSDocID { get; set; }
+
+        public string PreviewFileName { get; set; }
+
+        //Extra 4 parameters added for FTS
+        public string DocCategory { get; set; }
+        public bool DocActive { get; set; }
+        public int Param4 { get; set; }
+        public string Param5 { get; set; }
+        #endregion
+    }
+
+}

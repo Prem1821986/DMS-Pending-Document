@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:tns="http://magma.newgen.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" name="DMSWebService_Raj" targetNamespace="http://magma.newgen.com/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import schemaLocation="DMSWebServiceRaj_schema1.xsd" namespace="http://magma.newgen.com/" />
+    </xsd:schema>
+  </types>
+  <message name="addNGDocumentExt">
+    <part name="parameters" element="tns:addNGDocumentExt" />
+  </message>
+  <message name="searchDocumentExtResponse">
+    <part name="parameters" element="tns:searchDocumentExtResponse" />
+  </message>
+  <message name="NGChangeDocumentPropertyResponse">
+    <part name="parameters" element="tns:NGChangeDocumentPropertyResponse" />
+  </message>
+  <message name="NGDeleteDocument">
+    <part name="parameters" element="tns:NGDeleteDocument" />
+  </message>
+  <message name="NGChangeDocumentProperty">
+    <part name="parameters" element="tns:NGChangeDocumentProperty" />
+  </message>
+  <message name="searchDocumentExt">
+    <part name="parameters" element="tns:searchDocumentExt" />
+  </message>
+  <message name="addNGDocumentExtResponse">
+    <part name="parameters" element="tns:addNGDocumentExtResponse" />
+  </message>
+  <message name="NGDeleteDocumentResponse">
+    <part name="parameters" element="tns:NGDeleteDocumentResponse" />
+  </message>
+  <portType name="AddDocumentDMS">
+    <operation name="NGChangeDocumentProperty">
+      <input wsam:Action="http://magma.newgen.com/AddDocumentDMS/NGChangeDocumentPropertyRequest" message="tns:NGChangeDocumentProperty" />
+      <output wsam:Action="http://magma.newgen.com/AddDocumentDMS/NGChangeDocumentPropertyResponse" message="tns:NGChangeDocumentPropertyResponse" />
+    </operation>
+    <operation name="addNGDocumentExt">
+      <input wsam:Action="http://magma.newgen.com/AddDocumentDMS/addNGDocumentExtRequest" message="tns:addNGDocumentExt" />
+      <output wsam:Action="http://magma.newgen.com/AddDocumentDMS/addNGDocumentExtResponse" message="tns:addNGDocumentExtResponse" />
+    </operation>
+    <operation name="searchDocumentExt">
+      <input wsam:Action="http://magma.newgen.com/AddDocumentDMS/searchDocumentExtRequest" message="tns:searchDocumentExt" />
+      <output wsam:Action="http://magma.newgen.com/AddDocumentDMS/searchDocumentExtResponse" message="tns:searchDocumentExtResponse" />
+    </operation>
+    <operation name="NGDeleteDocument">
+      <input wsam:Action="http://magma.newgen.com/AddDocumentDMS/NGDeleteDocumentRequest" message="tns:NGDeleteDocument" />
+      <output wsam:Action="http://magma.newgen.com/AddDocumentDMS/NGDeleteDocumentResponse" message="tns:NGDeleteDocumentResponse" />
+    </operation>
+  </portType>
+  <binding name="AddDocumentDMSPortBinding" type="tns:AddDocumentDMS">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="NGChangeDocumentProperty">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="addNGDocumentExt">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="searchDocumentExt">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="NGDeleteDocument">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+  <service name="DMSWebService_Raj">
+    <port name="AddDocumentDMSPort" binding="tns:AddDocumentDMSPortBinding">
+      <soap:address location="http://10.68.252.35:9080/RISLWS/DMSWebService_Raj" />
+    </port>
+  </service>
+</definitions>

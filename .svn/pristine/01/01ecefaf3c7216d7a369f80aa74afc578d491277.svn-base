@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <configSections>
+    <sectionGroup name="applicationSettings" type="System.Configuration.ApplicationSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+      <section name="DMS_WindowsService.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    </sectionGroup>
+  </configSections>
+ <appSettings>
+   <!--<add key="ReadExcelFilePath" value="C:\Excel EArchival\" />Excel file Path to read
+    <add key="DocumentPathToSave" value="E:\\ESignUpload\\ESignPDF\\" />Used to check Directory only along with # in last
+    <add key="ReadExcelDocumentsPath" value="C:\Excel EArchival\" />Path of the documents for Uploaded Excel file--> 
+   <!--  <add key="startPagepdf" value="1" />-->
+    <!-- <add key="endPagepdf" value="4" />-->
+   <add key="ReadExcelFilePath" value="D:\Excel EArchival\" /><!--Excel file Path to read-->
+   <add key="DocumentPathToSave" value="D:\\ESignUpload\\ESignPDF\\" /><!--Used to check Directory only along with # in last-->
+   <add key="ReadExcelDocumentsPath" value="D:\Excel EArchival\" /><!--Path of the documents for Uploaded Excel file--> 
+    <add key="startPagepdf" value="1" />
+    <add key="endPagepdf" value="4" />
+   <add key="ajmerstartPagepdf" value="1" />  
+   <add key="ajmerendPagepdf" value="1" />
+  </appSettings>
+  <connectionStrings>
+    <!--<add name="ConnStringDMS" connectionString="Data Source=10.68.252.206;Initial Catalog=EArchivalTesting;Integrated Security=true;User Id=EArchival;password=Earchival@2017#;MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;" providerName="System.Data.SqlClient" />-->
+    <add name="ConnStringDMS" providerName="System.Data.SqlClient" connectionString="Data Source=10.68.252.206; Initial Catalog=REAMS_VER1;Integrated Security=false;User ID=EArchival_New;Password=Earchival@2018#; MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;"/>
+    <!--<add name="ConnStringDMS" providerName="System.Data.SqlClient" connectionString="Data Source=10.68.126.142; Initial Catalog=EArchival_New_13122019;Integrated Security=false;User ID=sa;Password=admin@123; MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;"/>-->
+    <!--<add name="ConnStringDMS" providerName="System.Data.SqlClient" connectionString="Data Source=10.68.126.142; Initial Catalog=EArchival_New_13122019;Integrated Security=false;User ID=sa;Password=admin@123; MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;"/>-->
+    <!--<add name="ConnStringDMS" providerName="System.Data.SqlClient" connectionString="Data Source=10.68.252.206; Initial Catalog=Reams_Earchival;Integrated Security=false;User ID=Reams_Earchival;Password=Reams@2019#; MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;"/>-->
+    <!--<add name="ConnStringDMS" connectionString="Data Source=PARUL-LAP\SQLEXPRESS;Initial Catalog=EArchivalTesting;Integrated Security=true;uid=sa;password=pass@1234;MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;" providerName="System.Data.SqlClient" />-->
+    <!--<add name="ConnStringDMS" providerName="System.Data.SqlClient" connectionString="Data Source=10.70.234.24; Initial Catalog=REAMS_VER1;Integrated Security=false;User ID=reams_ver1;Password=Reamsver1@2018#; MultipleActiveResultSets=True;Min Pool Size=10;Max Pool Size=2000;Pooling=true;" />-->
+  </connectionStrings>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
+  </startup>
+  <system.web>
+    <membership defaultProvider="ClientAuthenticationMembershipProvider">
+      <providers>
+        <add name="ClientAuthenticationMembershipProvider" type="System.Web.ClientServices.Providers.ClientFormsAuthenticationMembershipProvider, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" serviceUri="" />
+      </providers>
+    </membership>
+    <roleManager defaultProvider="ClientRoleProvider" enabled="true">
+      <providers>
+        <add name="ClientRoleProvider" type="System.Web.ClientServices.Providers.ClientRoleProvider, System.Web.Extensions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" serviceUri="" cacheTimeout="86400" />
+      </providers>
+    </roleManager>
+  </system.web>
+  <system.serviceModel>
+    <bindings>
+      <!--<basicHttpBinding>
+        <binding name="BasicHttpBinding_IThickClientService" />
+      </basicHttpBinding>-->
+      <basicHttpBinding>
+        <binding name="BasicHttpBinding_IThickClientService" maxReceivedMessageSize="2147483647"  maxBufferPoolSize="2147483647" closeTimeout="02:00:00" openTimeout="02:00:00" receiveTimeout="02:00:00" sendTimeout="10:00:00">
+          <readerQuotas maxDepth="2147483647" maxArrayLength="2147483647" maxStringContentLength="2147483647"/>
+          <security mode="None">
+            <transport clientCredentialType="None" proxyCredentialType="None"></transport>
+          </security>
+        </binding>
+      </basicHttpBinding>
+    </bindings>
+    <behaviors>
+       <serviceBehaviors>
+          <behavior>
+            <dataContractSerializer maxItemsInObjectGraph="2147483647" />
+            <!-- To avoid disclosing metadata information,
+            set the value below to false and remove the metadata endpoint above before deployment -->
+            <serviceMetadata httpGetEnabled="True"/>
+            <!-- To receive exception details in faults for debugging purposes,
+            set the value below to true.  Set to false before deployment
+            to avoid disclosing exception information -->
+            <serviceDebug includeExceptionDetailInFaults="true" />
+          </behavior>
+        </serviceBehaviors>
+       <endpointBehaviors>
+          <behavior name="ClientBehavior">
+            <dataContractSerializer maxItemsInObjectGraph="2147483647"/>
+          </behavior>
+      </endpointBehaviors>
+    </behaviors>
+    <client>
+      <endpoint address="http://10.70.230.69:81/DMSThickClientService/ThickClientService.svc"
+        binding="basicHttpBinding" bindingConfiguration="BasicHttpBinding_IThickClientService"
+        contract="E_Archival_DMS_ThickClient_Service.IThickClientService"
+        name="BasicHttpBinding_IThickClientService" />
+    </client>
+  </system.serviceModel>
+  <applicationSettings>
+    <DMS_WindowsService.Properties.Settings>
+      <setting name="DMS_WindowsService_DMSWebService_DMSWebService_Raj"
+        serializeAs="String">
+        <value>http://10.70.236.75:8080/axis2/services/DMSWebService_Raj.DMSWebService_RajHttpSoap11Endpoint/</value>
+      </setting>
+      <setting name="DMS_WindowsService_FTSUpdate_DMSUpdateDocument"
+        serializeAs="String">
+        <value>http://10.70.236.75:8080/axis2/services/DMSUpdateDocument.DMSUpdateDocumentHttpSoap11Endpoint/</value>
+      </setting>
+    </DMS_WindowsService.Properties.Settings>
+  </applicationSettings>
+</configuration>

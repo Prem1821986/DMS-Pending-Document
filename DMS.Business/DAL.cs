@@ -1,0 +1,340 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Configuration;
+
+namespace DMS.Business
+{
+    public class DAL
+    {
+        //public string connection = ConfigurationManager.ConnectionStrings["ConnStringDMS"].ConnectionString;
+        public string connection { get; set; }
+        public SqlConnection Conn;
+        public DAL()
+        {
+            Conn = new SqlConnection(connection);
+            Conn.Close();
+            Conn.Open();
+        }
+
+        public DAL(string Connection)
+        {
+            connection = Connection;
+            Conn = new SqlConnection(Connection);
+            Conn.Close();
+            Conn.Open();
+        }
+
+        #region "FILL DATA TABLE"
+
+        public void Fill(DataTable dataTable, String procedureName)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+            oCommand.CommandType = CommandType.StoredProcedure;
+
+            SqlDataAdapter oAdapter = new SqlDataAdapter();
+
+            oAdapter.SelectCommand = oCommand;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    oAdapter.SelectCommand.Transaction = oTransaction;
+                    oAdapter.Fill(dataTable);
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oAdapter.Dispose();
+                }
+            }
+        }
+
+        public void Fill(DataTable dataTable, String procedureName, SqlParameter[] parameters)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+            oCommand.CommandType = CommandType.StoredProcedure;
+
+            if (parameters != null)
+                oCommand.Parameters.AddRange(parameters);
+
+            SqlDataAdapter oAdapter = new SqlDataAdapter();
+
+            oAdapter.SelectCommand = oCommand;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    oAdapter.SelectCommand.Transaction = oTransaction;
+                    oAdapter.Fill(dataTable);
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oAdapter.Dispose();
+                }
+            }
+        }
+
+        #endregion
+
+        #region "FILL DATASET"
+
+        public void Fill(DataSet dataSet, String procedureName)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+            oCommand.CommandType = CommandType.StoredProcedure;
+
+            SqlDataAdapter oAdapter = new SqlDataAdapter();
+
+            oAdapter.SelectCommand = oCommand;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    oAdapter.SelectCommand.Transaction = oTransaction;
+                    oAdapter.Fill(dataSet);
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oAdapter.Dispose();
+                }
+            }
+        }
+
+        public void Fill(DataSet dataSet, String procedureName, SqlParameter[] parameters)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+            oCommand.CommandType = CommandType.StoredProcedure;
+
+            if (parameters != null)
+                oCommand.Parameters.AddRange(parameters);
+
+            SqlDataAdapter oAdapter = new SqlDataAdapter();
+
+            oAdapter.SelectCommand = oCommand;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    oAdapter.SelectCommand.Transaction = oTransaction;
+                    oAdapter.Fill(dataSet);
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oAdapter.Dispose();
+                }
+            }
+        }
+
+        #endregion
+
+        #region "EXECUTE SCALAR"
+
+        public object ExecuteScalar(String procedureName)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+
+            oCommand.CommandType = CommandType.StoredProcedure;
+            object oReturnValue;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    oCommand.Transaction = oTransaction;
+                    oReturnValue = oCommand.ExecuteScalar();
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oCommand.Dispose();
+                }
+            }
+            return oReturnValue;
+        }
+
+        public object ExecuteScalar(String procedureName, SqlParameter[] parameters)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+
+            oCommand.CommandType = CommandType.StoredProcedure;
+            object oReturnValue;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    if (parameters != null)
+                        oCommand.Parameters.AddRange(parameters);
+
+                    oCommand.Transaction = oTransaction;
+                    oReturnValue = oCommand.ExecuteScalar();
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oCommand.Dispose();
+                }
+            }
+            return oReturnValue;
+        }
+
+        #endregion
+
+        #region "EXECUTE NON QUERY"
+
+        public int ExecuteNonQuery(string procedureName)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+
+            oCommand.CommandType = CommandType.StoredProcedure;
+            int iReturnValue;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    oCommand.Transaction = oTransaction;
+                    iReturnValue = oCommand.ExecuteNonQuery();
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oCommand.Dispose();
+                }
+            }
+            return iReturnValue;
+        }
+
+        public int ExecuteNonQuery(string procedureName, SqlParameter[] parameters)
+        {
+            SqlConnection oConnection = new SqlConnection(connection);
+            SqlCommand oCommand = new SqlCommand(procedureName, oConnection);
+
+            oCommand.CommandType = CommandType.StoredProcedure;
+            int iReturnValue;
+            oConnection.Open();
+            using (SqlTransaction oTransaction = oConnection.BeginTransaction())
+            {
+                try
+                {
+                    if (parameters != null)
+                        oCommand.Parameters.AddRange(parameters);
+
+                    oCommand.Transaction = oTransaction;
+                    iReturnValue = oCommand.ExecuteNonQuery();
+                    oTransaction.Commit();
+                }
+                catch
+                {
+                    oTransaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    if (oConnection.State == ConnectionState.Open)
+                        oConnection.Close();
+                    oConnection.Dispose();
+                    oCommand.Dispose();
+                }
+            }
+            return iReturnValue;
+        }
+
+        #endregion
+    }
+    public struct SPNames
+    {
+        public static string Login = "DMS_CheckLogin";
+        public static string DepartmentList = "getDeptList";
+        public static string SubDepartmentList = "sp_get_SubDeptList";
+        public static string DocumentType = "getDocType";
+        public static string DocumentDetails = "DMS_THICK_GET_METADATADETAILS";
+        public static string GetColumns = "DMS_Get_Columns";
+        public static string MandatoryColumns = "DMS_Get_MandatoryColumns";
+        public static string AddMetaData = "sp_DMS_insert_MetaData";
+        public static string UpdateDMSDocument = "DMS_UPDATE_DOCUMENTDETAILS";
+        public static string GetDocTypeID = "sp_getDocTypeID";
+        public static string GetDMSDocuments = "sp_Get_DMS_DocToUpload_Divya"; // Divya
+        public static string spGetSetBulkUtilityUplodingType = "sp_Get_Set_BulkUtilityUplodingType"; // Divya
+		public static string AddDMSDocumentDetails = "sp_addUpdate_DMSDocumentDetails";//
+        //public static string AddDMSDocumentDetails = "sp_addUpdate_DMSDocumentDetails_Divya";//
+        public static string GetDMSDocumentDetails = "sp_Get_DMSDocumentDetails";
+        public static string GetConfig = "sp_GetConfig";
+        public static string SPRegNStampsDDLData = "sp_GetRegNStamps_DDLData";
+    }
+}

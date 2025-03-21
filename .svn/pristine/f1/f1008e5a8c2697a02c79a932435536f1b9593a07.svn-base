@@ -1,0 +1,82 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Configuration;
+
+namespace DMS_WindowsService.Common
+{
+	class Utility
+	{
+		public static string constr = ConfigurationManager.ConnectionStrings["ConnStringDMS"].ConnectionString.ToString();
+
+		public static string ReadExcelFilePath = ConfigurationManager.AppSettings["ReadExcelFilePath"].ToString();
+
+		public static string ReadExcelDocumentsPath = ConfigurationManager.AppSettings["ReadExcelDocumentsPath"].ToString();
+
+		public static string DocumentPathToSave = ConfigurationManager.AppSettings["DocumentPathToSave"].ToString();
+
+		public static string DocTypeNotFound = "Document Type does not exist";
+
+		public static string DocumentNotFound = "Document does not exist";
+
+		#region Department Names
+		public const string RSAD_DEPT_NAME = "Art ,Culture & Archaeology Department";
+		public const string DIPR_DEPT_NAME = "Department of Information & Public Relations";// DIPR DEPT NAME UPDATED : OLD : "DIPR";
+		public const string REGISTRATION_AND_STAMPS_DEPT_NAME = "REGISTRATION AND STAMPS";
+		public const string ART_AND_CULTURE_DEPT_NAME = "Art And Culture";
+		public const string Devasthan = "Devasthan Department";
+		public const string LSG = "Local Self Government";
+		#endregion
+
+		#region DocTypeName
+		public const string DEV_TRUSTREGISTRATION = "TRUST REGISTRATION";
+		#endregion
+
+		#region Column Names
+		public const string COL_NAME_EXCEL_DOCUMENT_TYPE = "document type";
+		public const string COL_NAME_EXCEL_BUNDLE_NUMBER = "bundle number";
+		public const string COL_NAME_EXCEL_DISTRICT = "District Code";
+		public const string COL_NAME_EXCEL_SRO = "SRO Code";
+		public const string COL_NAME_EXCEL_DOCUMENT_NAME = "Document Name";
+		public const string COL_NAME_EXCEL_SUBJECT_CODE = "Subject_Code";
+		public const string COL_NAME_EXCEL_PHOTO_TYPE = "PhotoType";
+		public const string COL_FOLDER_NAME = "Folder Name";
+		public const string COL_DEVASTHAN_TYPE = "Type";
+		public const string COL_FILE_NAME = "File Name";
+		
+		
+
+		public const string COL_NAME_DOCUMENT_ID = "DocumentID";
+		public const string COL_NAME_DOCUMENT_NAME = "DocumentName";
+		public const string COL_NAME_DEPARTMENT_NAME = "DepartmentName";
+		public const string COL_SUB_DEPT_NAME = "SubDepartmentName";
+		public const string COL_NAME_DOC_TYPE_NAME = "DocTypeName";
+		public const string COL_NAME_DOCUMENT_PATH = "DocumentPath";
+		public const string COL_NAME_DOC_TYPE = "DocType";
+		public const string COL_NAME_Preview_DOCUMENT_NAME = "PreviewDocumentName";
+		public const string COL_NAME_DOC_NAME = "DocName";
+		public const string COL_NAME_BUNDLE_NUMBER = "Bundle/Pad No.";
+		public const string COL_REGISTRATION_TYPE_OF_DOCUMENTS = "Type of Documents";
+		public const string COL_WARD_NO = "Ward No";
+		public const string COL_AJMER_NAGAR_NIGAM = "SubDepartmentName";
+		public const string COL_Topic_Head = "Topic/Head";
+
+		#endregion
+
+		#region Mst_Config
+		public static string ProductionDMS = "ProductionDMS";
+		public static string StagingDMS = "StagingDMS";
+		#endregion
+	}
+
+	public enum DMSDocumentType
+	{
+		CitizenIdProof = 1,
+		CitizenAffiDevit = 2,
+		DocumentUploadMain = 3,
+		DocumentUploadPreview = 4
+	}
+
+}

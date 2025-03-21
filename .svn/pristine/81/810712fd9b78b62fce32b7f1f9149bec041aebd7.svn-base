@@ -1,0 +1,86 @@
+﻿Installing assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Installing service DMSWindowsService...
+Creating EventLog source DMSWindowsService in log Application...
+Rolling back assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Restoring event log to previous state for source DMSWindowsService.
+Installing assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Installing service DMSWindowsService...
+Creating EventLog source DMSWindowsService in log Application...
+Rolling back assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Restoring event log to previous state for source DMSWindowsService.
+Installing assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Installing service DMSWindowsService...
+Creating EventLog source DMSWindowsService in log Application...
+Rolling back assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Restoring event log to previous state for source DMSWindowsService.
+Uninstalling assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Removing EventLog source DMSWindowsService.
+Service DMSWindowsService is being removed from the system...
+Service DMSWindowsService was successfully removed from the system.
+Installing assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Installing service DMSWindowsService...
+Creating EventLog source DMSWindowsService in log Application...
+Rolling back assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Restoring event log to previous state for source DMSWindowsService.
+Installing assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Installing service DMSWindowsService...
+Creating EventLog source DMSWindowsService in log Application...
+Rolling back assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Restoring event log to previous state for source DMSWindowsService.
+Installing assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Installing service DMSWindowsService...
+Creating EventLog source DMSWindowsService in log Application...
+Rolling back assembly 'C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe'.
+Affected parameters are:
+   logtoconsole = 
+   logfile = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.InstallLog
+   assemblypath = C:\EArchivalApp\DMS-WindowsService\DMS-WindowsService\bin\Release\DMS-WindowsService.exe
+Restoring event log to previous state for source DMSWindowsService.

@@ -1,0 +1,850 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Data.OleDb;
+using System.Reflection;
+using System.IO;
+using Microsoft.Win32;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using System.Text;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+//using Microsoft.Office.Interop.Excel;
+
+namespace DMS_WindowsService.Common
+{
+	public static class Common
+	{
+		/// <summary>
+		/// Convert the list to the datatable
+		/// </summary>
+		/// <typeparam name="T">List Type</typeparam>
+		/// <param name="items">List</param>
+		/// <returns>Datatable</returns>
+		public static DataTable ToDataTable<T>(List<T> items)
+		{
+			DataTable dataTable = new DataTable(typeof(T).Name);
+			PropertyInfo[] Props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			foreach (PropertyInfo prop in Props)
+			{
+				dataTable.Columns.Add(prop.Name);
+			}
+			foreach (T item in items)
+			{
+				var values = new object[Props.Length];
+				for (int i = 0; i < Props.Length; i++)
+				{
+					values[i] = Props[i].GetValue(item, null);
+				}
+				dataTable.Rows.Add(values);
+			}
+
+			if (dataTable.Columns.Contains("displayText"))
+			{
+				DataView view = new DataView(dataTable);
+				dataTable = view.ToTable(false, "displayText", "value");
+				dataTable.Columns["displayText"].ColumnName = "MetaDataFieldName";
+			}
+			if (dataTable.Columns.Contains("ControlName"))
+			{
+				DataView view = new DataView(dataTable);
+				dataTable = view.ToTable(false, "ControlName", "value");
+				dataTable.Columns["ControlName"].ColumnName = "MetaDataFieldName";
+			}
+			dataTable.Columns["value"].ColumnName = "MetaDataFieldValue";
+			dataTable.AcceptChanges();
+			return dataTable;
+		}
+
+
+		/// <summary>
+		/// read the data from the excel in the datatable
+		/// </summary>
+		/// <param name="filePath">Excel File PAth</param>
+		/// <param name="sheetName">Sheet name in the excel file</param>
+		/// <returns>datatable</returns>
+		public static DataTable getDataTablefromExcel(string filePath, string sheetName)
+		{
+			try
+			{
+				ServiceLog ServiceErrorLog = new ServiceLog();
+				//ServiceErrorLog.ErrorLog("Excel File Read Start", "", "", "Selected Excel File Name" + sheetName, "", "getDataTablefromExcel");
+				using (OleDbConnection objConn = new OleDbConnection(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties='Excel 12.0;HDR=YES;IMEX=1;';"))
+				{
+					objConn.Open();
+					OleDbCommand cmd = new OleDbCommand();
+					OleDbDataAdapter oleda = new OleDbDataAdapter();
+					DataSet ds = new DataSet();
+					DataTable dt = objConn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, null);
+					String[] excelSheets = new String[dt.Rows.Count];
+					int i = 0;
+
+					// Add the sheet name to the string array.
+					foreach (DataRow row in dt.Rows)
+					{
+						excelSheets[i] = row["TABLE_NAME"].ToString();
+						i++;
+					}
+
+					if (excelSheets.Contains(sheetName + "$"))
+					{
+						cmd.Connection = objConn;
+						cmd.CommandType = CommandType.Text;
+
+						cmd.CommandText = "SELECT * FROM [" + sheetName + "$]";
+						//  cmd.CommandText = "SELECT * FROM ( SELECT *, ROW_NUMBER() OVER (ORDER BY DocumentName) AS RowNum FROM [" + sheetName + "$] )AS MyDerivedTable WHERE MyDerivedTable.RowNum BETWEEN 1 AND 10";
+						oleda = new OleDbDataAdapter(cmd);
+						oleda.Fill(ds, "excelData");
+						DataTable dtResult = ds.Tables["excelData"];
+
+						DataTable dtActualResult = new DataTable("dtActualResult");
+
+						for (int j = 0; j < dtResult.Columns.Count; j++)
+						{
+							string s2 = dtResult.Columns[j].ToString();
+							s2 = s2.Replace("#", ".");
+
+							string ColumnName = s2.ToString();
+
+							DataColumn dCol = new DataColumn(ColumnName, typeof(System.String));
+							dtActualResult.Columns.Add(dCol);
+						}
+
+						for (int k = 0; k < dtResult.Rows.Count; k++)
+						{
+							dtActualResult.Rows.Add();
+							for (int x = 0; x < dtResult.Columns.Count; x++)
+							{
+								dtActualResult.Rows[k][x] = dtResult.Rows[k][x];
+							}
+						}
+
+						objConn.Close();
+						if (dtActualResult != null)
+						{
+							ServiceErrorLog.ErrorLog(filePath, "No. of Excel Rows", dtActualResult.Rows.Count.ToString(), "", "", "getDataTablefromExcel");
+						}
+						return dtActualResult;
+					}
+					else
+					{
+						return null;
+					}
+				}
+			}
+			catch (Exception Ex)
+			{
+				throw Ex;
+				//ServiceErrorLog.ErrorLog("Excel File Rows Count", "", "", "Excel Rows" + dtActualResult, "", "getDataTablefromExcel");
+			}
+		}
+
+		public static string ToFileSize(this long source)
+		{
+			const int byteConversion = 1024;
+			double bytes = Convert.ToDouble(source);
+
+			if (bytes >= Math.Pow(byteConversion, 3)) //GB Range
+			{
+				return string.Concat(Math.Round(bytes / Math.Pow(byteConversion, 3), 2), " GB");
+			}
+			else if (bytes >= Math.Pow(byteConversion, 2)) //MB Range
+			{
+				return string.Concat(Math.Round(bytes / Math.Pow(byteConversion, 2), 2), " MB");
+			}
+			else if (bytes >= byteConversion) //KB Range
+			{
+				return string.Concat(Math.Round(bytes / byteConversion, 2), " KB");
+			}
+			else //Bytes
+			{
+				return string.Concat(bytes, " Bytes");
+			}
+		}
+
+		public static string GetMimeType(FileInfo fileInfo)
+		{
+			string mimeType = "application/unknown";
+
+			RegistryKey regKey = Registry.ClassesRoot.OpenSubKey(
+				fileInfo.Extension.ToLower()
+				);
+
+			if (regKey != null)
+			{
+				object contentType = regKey.GetValue("Content Type");
+
+				if (contentType != null)
+					mimeType = contentType.ToString();
+			}
+
+			return mimeType;
+		}
+
+
+		internal static object[,] WriteArray(List<DataRow> lsterro, List<string> dtColumns)
+		{
+			var data = new object[lsterro.Count + 1, dtColumns.Count];
+
+			//Create column row for excel
+			for (var col = 1; col <= dtColumns.Count; col++)
+			{
+				data[0, col - 1] = dtColumns[col - 1];
+			}
+
+			//Add excel row data
+			for (var row = 1; row <= lsterro.Count; row++)
+			{
+				DataRow dr = lsterro[row - 1];
+				for (var column = 1; column <= dtColumns.Count; column++)
+				{
+
+					data[row, column - 1] = dr[dtColumns[column - 1]];//dr[column - 1];
+				}
+			}
+			return data;
+		}
+
+		internal static object[,] WriteArrayForDMSErrors(List<DMSErrorLog> lsterro, List<string> dtColumns)
+		{
+			var data = new object[lsterro.Count + 1, dtColumns.Count];
+			PropertyInfo[] l_props = typeof(DMSErrorLog).GetProperties();
+
+			//Create column row for excel
+			for (var col = 1; col <= dtColumns.Count; col++)
+			{
+				data[0, col - 1] = dtColumns[col - 1];
+			}
+
+			for (var row = 1; row <= lsterro.Count; row++)
+			{
+				DMSErrorLog l_DMSERR = lsterro[row - 1];
+				data[row, 0] = l_DMSERR.DocID;
+				data[row, 1] = l_DMSERR.ErrorMsg;
+				data[row, 2] = l_DMSERR.DocType;
+			}
+
+			return data;
+		}
+
+		internal static object[,] WriteArrayForDMSSuccess(List<DMSSuccessLog> lstSuccess, List<string> dtColumns)
+		{
+			var data = new object[lstSuccess.Count + 1, dtColumns.Count];
+			PropertyInfo[] l_props = typeof(DMSErrorLog).GetProperties();
+
+			//Create column row for excel
+			for (var col = 1; col <= dtColumns.Count; col++)
+			{
+				data[0, col - 1] = dtColumns[col - 1];
+			}
+
+			for (var row = 1; row <= lstSuccess.Count; row++)
+			{
+				DMSSuccessLog l_DMSSuccess = lstSuccess[row - 1];
+				data[row, 0] = l_DMSSuccess.DocID;
+				data[row, 1] = l_DMSSuccess.DocType;
+			}
+
+			return data;
+		}
+
+		public static void WriteErrorLogExcel(object[,] data, string ErrorFilePath)
+		{
+			ServiceLog ServiceErrorLog = new ServiceLog();
+			Microsoft.Office.Interop.Excel.Application excel = null;
+			Microsoft.Office.Interop.Excel.Workbook worKbooK = null;
+			Microsoft.Office.Interop.Excel.Worksheet worksheet = null;
+			Microsoft.Office.Interop.Excel.Range celLrangE = null;
+
+			try
+			{
+				excel = new Microsoft.Office.Interop.Excel.Application();
+				excel.Visible = false;
+				excel.DisplayAlerts = false;
+				worKbooK = excel.Workbooks.Add(Type.Missing);
+
+				worksheet = (Microsoft.Office.Interop.Excel.Worksheet)worKbooK.ActiveSheet;
+
+				int row = data.GetUpperBound(0);
+				int column = data.GetUpperBound(1);
+
+				int offset = 1;
+				var startCell = (Microsoft.Office.Interop.Excel.Range)worksheet.Cells[offset, 1];
+				var endCell = (Microsoft.Office.Interop.Excel.Range)worksheet.Cells[row + offset, column + 1];
+				celLrangE = worksheet.Range[startCell, endCell];
+
+				celLrangE.Value2 = data;
+
+				Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
+				border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+				border.Weight = 2d;
+
+				//worKbooK.SaveAs(ErrorFilePath);
+				//worKbooK.SaveAs(ErrorFilePath, Microsoft.Office.Interop.Excel.XlFileFormat.xlWorkbookNormal, Type.Missing, Type.Missing, false, false, Microsoft.Office.Interop.Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+				worKbooK.SaveCopyAs(ErrorFilePath);
+				worKbooK.Close();
+				excel.Quit();
+
+				ServiceErrorLog.ErrorLog("WriteErrorLogExcel", "Excel Created", ErrorFilePath, "", "", "");
+			}
+			catch (Exception ex)
+			{
+				ServiceErrorLog.ErrorLog("WriteErrorLogExcel", "Eror in creating excel", ErrorFilePath, ex.Message, ex.StackTrace, "");
+			}
+			finally
+			{
+				if (celLrangE != null) Marshal.ReleaseComObject(celLrangE);
+				if (worksheet != null) Marshal.ReleaseComObject(worksheet);
+				if (worKbooK != null) Marshal.ReleaseComObject(worKbooK);
+				if (excel != null) Marshal.ReleaseComObject(excel);
+			}
+		}
+		public static void GeneratePreviewFile(string documentName, string actualPathofDoc, string pdfPath, int startPage, int endPage)
+		{
+			var targetPath = string.Empty;
+			try
+			{
+				string FileExtension = Path.GetExtension(documentName);
+				var baseFileName = Path.GetFileNameWithoutExtension(documentName);
+				var pdfFileName = "Preview_" + baseFileName + ".pdf";
+				var actualPath = Path.Combine(actualPathofDoc, documentName);
+				targetPath = Path.Combine(pdfPath, pdfFileName);
+
+				//PdfDocument pdf = new PdfDocument();
+				//PdfDocument previewDocument = PdfReader.Open(file, PdfDocumentOpenMode.Import);
+
+
+				////using (FileStream inFile = new FileStream(actualPathofDoc, FileMode.Open, FileAccess.Read))
+				////{
+				////    // open the source document
+				////    Document documentIn = new Document(inFile);
+
+				////    // enumerate the pages in the source document
+				////    for (int i = 0; i < documentIn.Pages.Count; i++)
+				////    {
+				////        // create the target document
+				////        Document documentOut = new Document();
+
+				////        // append page i to the target document, we don't want to change the documentIn, so Clone the page.
+				////        documentOut.Pages.Add(documentIn.Pages[i].Clone());
+
+				////        // write the target document to disk
+				////        using (FileStream outFile = new FileStream(
+				////                    string.Format(@"..\..\split_{0}.pdf", i),
+				////                    FileMode.Create, FileAccess.Write))
+				////        {
+				////            documentOut.Write(outFile);
+				////        }
+				////    }
+				////}
+
+			}
+			catch (Exception ex)
+			{ }
+		}
+
+		public static void ExportDataTableToExcel(DataTable argDataTable, string ExecelFilePath)
+		{
+			var dataArr = WriteArray(argDataTable);
+			WriteErrorLogExcel(dataArr, ExecelFilePath);
+
+			//WriteErrorLogExcel(argDataTable, ExecelFilePath);// Used for writing xml through OpenXMl
+		}
+
+		public static void WriteErrorLogExcel(DataTable dt, string FilePath)
+		{
+			DataSet ds = new DataSet();
+			ds.Tables.Add(dt);
+
+			CreateExcelFile.CreateExcelDocument(ds, FilePath);
+		}
+
+		public static void WriteErrorLogExcel(List<DataRow> l_Rows, string FilePath)
+		{
+			DataTable table = new DataTable();
+			table = l_Rows.CopyToDataTable();
+
+			DataSet ds = new DataSet();
+			ds.Tables.Add(table);
+
+			CreateExcelFile.CreateExcelDocument(ds, FilePath);
+		}
+
+
+		public static DataTable ConvertListToDataTable(List<DataRow> list)
+		{
+			// New table.
+			DataTable table = new DataTable();
+			table = list.CopyToDataTable();
+
+			return table;
+		}
+
+		public static DataTable ListToDataTable<T>(List<T> items)
+		{
+			DataTable dataTable = new DataTable(typeof(T).Name);
+			//Get all the properties by using reflection   
+			PropertyInfo[] Props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			foreach (PropertyInfo prop in Props)
+			{
+				//Setting column names as Property names  
+				dataTable.Columns.Add(prop.Name);
+			}
+			foreach (T item in items)
+			{
+				var values = new object[Props.Length];
+				for (int i = 0; i < Props.Length; i++)
+				{
+
+					values[i] = Props[i].GetValue(item, null);
+				}
+				dataTable.Rows.Add(values);
+			}
+
+			return dataTable;
+		}
+
+		internal static object[,] WriteArray(DataTable argTable)
+		{
+			int l_NoOfRows = argTable.Rows.Count;
+			int l_NoOfCols = argTable.Columns.Count;
+			var data = new object[l_NoOfRows, l_NoOfCols];
+
+			//Create column row for excel
+			for (var col = 0; col < l_NoOfCols; col++)
+			{
+				data[0, col] = argTable.Columns[col].ColumnName;
+			}
+
+			//Add excel row data
+			for (var row = 1; row < l_NoOfRows; row++)
+			{
+				DataRow dr = argTable.Rows[row - 1];
+				for (var column = 0; column < l_NoOfCols; column++)
+				{
+					string l_ColoumnName = data[0, column].ToString();
+					data[row, column] = dr[l_ColoumnName];
+				}
+			}
+			return data;
+		}
+
+		public static string GetPathWithExcelFileName(string argFileName)
+		{
+			string ExcelFilePath = Utility.ReadExcelFilePath;
+			string l_PathWithExcelFileName = string.Empty;
+			l_PathWithExcelFileName = ExcelFilePath + argFileName;
+			return l_PathWithExcelFileName;
+		}
+		public static string GetErrorPathWithExcelFileName(string argFileName, string type)
+		{
+			string ExcelFilePath = Utility.ReadExcelFilePath;
+			string l_ErrorPathWithExcelFileName = string.Empty;
+			if (type == "DMSError")
+			{
+				//l_ErrorPathWithExcelFileName = ExcelFilePath + @"ErrorLog\DMSUploadError\" + "Error_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString() + "_" + argFileName;
+				l_ErrorPathWithExcelFileName = ExcelFilePath + @"ErrorLog\DMSUploadError\" + "Error_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_") + "_" + argFileName;
+			}
+			else
+			{
+				l_ErrorPathWithExcelFileName = ExcelFilePath + @"ErrorLog\DBUploadError\" + "Error_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_") + "_" + argFileName;
+			}
+			return l_ErrorPathWithExcelFileName;
+		}
+		public static string GetExecutedPathWithExcelFileName(string argFileName)
+		{
+			string ExcelFilePath = Utility.ReadExcelFilePath;
+			string l_ErrorPathWithExcelFileName = string.Empty;
+			l_ErrorPathWithExcelFileName = ExcelFilePath + @"Executed\" + "Executed_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_") + "_" + argFileName;
+			return l_ErrorPathWithExcelFileName;
+		}
+		public static string GetSuccessPathWithExcelFileName(string argFileName)
+		{
+			string ExcelFilePath = Utility.ReadExcelFilePath;
+			string l_ErrorPathWithExcelFileName = string.Empty;
+			l_ErrorPathWithExcelFileName = ExcelFilePath + @"SuccessLog\" + "Success_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_") + "_" + argFileName;
+			return l_ErrorPathWithExcelFileName;
+		}
+
+		public static string GetPathWithExcelFileNameFORProdDMSLOG(string fileType)
+		{
+			string ExcelFilePath = Utility.ReadExcelFilePath;
+			string l_ErrorPathWithExcelFileName = string.Empty;
+			if (fileType == "ProdDataToDMSTblError")
+			{
+				// Log error rows for Prod when data is saving to \\\10.68.251.93\\E$\\ReAMS\\ path --- insertFiletoDMSTableProdDB
+				l_ErrorPathWithExcelFileName = ExcelFilePath + @"SaveOldProdDataToDMS\ErrorLog\DMSTblUploadError\" + "DMSTblError_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_");
+			}
+			else if (fileType == "ProdDataToDMSTblSuccess")
+			{
+				// Log success rows for Prod when data is saving to \\\10.68.251.93\\E$\\ReAMS\\ path --- insertFiletoDMSTableProdDB
+				l_ErrorPathWithExcelFileName = ExcelFilePath + @"SaveOldProdDataToDMS\SucessLog\" + "DMSTblSuccess_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_");
+			}
+			else if (fileType == "ProdDMSServerError")
+			{
+				// Log error rows for Prod when DMS doc is genearte for prod data --- UploadProdDocumentToDMS
+				l_ErrorPathWithExcelFileName = ExcelFilePath + @"SaveOldProdDataToDMS\ErrorLog\DMSServerUploadError\" + "DMSServerError_" + DateTime.Now.ToString("dd-MMM-yyyy") + "_" + DateTime.Now.TimeOfDay.ToString().Replace(":", "_").Replace(".", "_");
+			}
+
+			return l_ErrorPathWithExcelFileName;
+		}
+
+		public static string GetSourcePath(string departmentName, DataRow drRow)
+		{
+			string l_ExcelPath = Utility.ReadExcelDocumentsPath;
+			StringBuilder l_FilePathForDoc = new StringBuilder();
+			l_FilePathForDoc.Append(l_ExcelPath);
+
+			if (departmentName.ToUpper().Equals(Utility.RSAD_DEPT_NAME.ToUpper()))
+			{
+				l_FilePathForDoc.Append(drRow[Utility.COL_SUB_DEPT_NAME].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_NAME_DOC_TYPE].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_State_City_Other].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_Topic_Head].ToString() + "\\");
+			}
+			else if (departmentName.ToUpper().Equals(Utility.DIPR_DEPT_NAME.ToUpper()))
+			{
+				//l_FilePathForDoc.Append(departmentName + "\\" + drRow[Utility.COL_NAME_EXCEL_DOCUMENT_TYPE].ToString() + "\\" + drRow[Utility.COL_NAME_EXCEL_PHOTO_TYPE].ToString() + drRow[Utility.COL_NAME_EXCEL_SUBJECT_CODE].ToString() + "\\");
+				l_FilePathForDoc.Append(departmentName + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_NAME_DOC_TYPE].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_NAME_EXCEL_PHOTO_TYPE].ToString() + drRow[Utility.COL_NAME_EXCEL_SUBJECT_CODE].ToString() + "\\");
+				// TBD - Divya
+			}
+			else if (departmentName.ToUpper().Equals(Utility.REGISTRATION_AND_STAMPS_DEPT_NAME.ToUpper()))
+			{
+				l_FilePathForDoc.Append(departmentName + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_NAME_EXCEL_DISTRICT].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_NAME_EXCEL_SRO].ToString() + "\\");
+			}
+			else if (departmentName.ToUpper().Equals(Utility.ART_AND_CULTURE_DEPT_NAME.ToUpper()))
+			{
+				l_FilePathForDoc.Append(departmentName + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_FOLDER_NAME].ToString() + "\\");
+			}
+			else if (departmentName.ToUpper().Equals(Utility.Devasthan.ToUpper()))
+			{
+				if (drRow[Utility.COL_NAME_DOC_TYPE].ToString().ToUpper().Equals(Utility.DEV_TRUSTREGISTRATION.ToUpper()))
+				{
+					l_FilePathForDoc.Append(departmentName + "\\");
+					l_FilePathForDoc.Append(drRow[Utility.COL_REGISTRATION_TYPE_OF_DOCUMENTS].ToString() + "\\");
+					l_FilePathForDoc.Append(drRow[Utility.COL_DEVASTHAN_TYPE].ToString() + "\\");
+					l_FilePathForDoc.Append(drRow[Utility.COL_NAME_BUNDLE_NUMBER].ToString() + "\\");
+				}
+				else
+				{
+					l_FilePathForDoc.Append(departmentName + "\\");
+					l_FilePathForDoc.Append(drRow[Utility.COL_SUB_DEPT_NAME].ToString() + "\\");
+					l_FilePathForDoc.Append(drRow[Utility.COL_NAME_DOC_TYPE].ToString() + "\\");
+					//l_FilePathForDoc.Append(drRow[Utility.COL_FOLDER_NAME].ToString() + "\\");
+				}
+
+			}
+			else if (departmentName.ToUpper().Equals(Utility.LSG.ToUpper()))
+			{
+				l_FilePathForDoc.Append(departmentName + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_SUB_DEPT_NAME].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_NAME_DOC_TYPE].ToString() + "\\");
+				l_FilePathForDoc.Append(drRow[Utility.COL_WARD_NO].ToString() + "\\");
+				//l_FilePathForDoc.Append(drRow[Utility.COL_AJMER_NAGAR_NIGAM].ToString() + "\\");
+				//l_FilePathForDoc.Append(drRow[Utility.COL_WARD_NO].ToString() + "\\");
+			}
+            else if (departmentName.ToUpper().Equals(Utility.RORI.ToUpper()))
+            {
+                l_FilePathForDoc.Append(drRow[Utility.COL_SUB_DEPT_NAME].ToString() + "\\");
+                l_FilePathForDoc.Append(drRow[Utility.COL_NAME_DOC_TYPE].ToString() + "\\");
+                l_FilePathForDoc.Append(drRow[Utility.COL_Accession_No].ToString() + "\\");
+            }
+            //else if (departmentName.ToUpper().Equals(Utility.OD.ToUpper()))
+            //{
+            //    l_FilePathForDoc.Append(drRow[Utility.COL_SUB_DEPT_NAME].ToString() + "\\");
+            //    l_FilePathForDoc.Append(drRow[Utility.COL_NAME_DOC_TYPE].ToString() + "\\");
+            //    l_FilePathForDoc.Append(drRow[Utility.COL_Field1].ToString() + "\\");
+            //}
+            else
+			{
+				l_FilePathForDoc.Append("\\" + "Documents" + "\\");
+			}
+
+			return l_FilePathForDoc.ToString();
+		}
+
+		//public static string RemoveSpecialChars(string str)
+		//{
+		//    // Create  a string array and add the special characters you want to remove
+		//    string[] chars = new string[] { ",", "/", "!", "@", "#", "$", "%", "^", "&", "*", "'", "\"", ";", "(", ")", ":", "|", "[", "]" };
+		//    //Iterate the number of times based on the String array length.
+
+		//    for (int i = 0; i < chars.Length; i++)
+		//    {
+		//        if (str.Contains(chars[i]))
+		//        {
+		//            str = str.Replace(chars[i], "");
+		//        }
+		//    }
+
+		//    return str;
+		//}
+
+
+		public static bool CheckSpecialChars(string str)
+		{
+            //Regex regex = new Regex(@"^[().0-9a-zA-Z _-]+$");
+            Regex regex = new Regex(@"^[()0-9a-zA-Z _-]+$");
+            if (regex.IsMatch(str))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+
+		}
+
+
+
+		public static DMSConfiguration GetDMSConfiguration()
+		{
+			try
+			{
+				var DMSConfiguration = new DMSConfiguration();
+				DataTable dtDMS = new DataTable();
+
+				// This will get which DMSConfiguration we will use.
+				DataTable DtCurrentDMSInuse = Master_Config(Mst_Config.CurrentDMSInUse, false);
+
+				// On the basis of DtCurrentDMSInuse the value will be used for DMS.
+				dtDMS = Master_Config(DtCurrentDMSInuse.Rows[0]["TargetValue"].ToString(), false);
+
+				for (int i = 0; i < dtDMS.Rows.Count; i++)
+				{
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "ImpersonationPassword")
+					{
+						DMSConfiguration.ImpersonationPassword = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "ImpersonationIP")
+					{
+						DMSConfiguration.ImpersonationIP = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "ImpersonationUserName")
+					{
+						DMSConfiguration.ImpersonationUserName = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "DMSViewDocumentPath")
+					{
+						DMSConfiguration.DMSViewDocumentPath = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "DMSFilePath")
+					{
+						DMSConfiguration.DMSFilePath = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "DMSWebService")
+					{
+						DMSConfiguration.DMSWebService = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "DMSUser")
+					{
+						DMSConfiguration.DMSUser = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "DMSPass")
+					{
+						DMSConfiguration.DMSPass = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "DMSDataClass")
+					{
+						DMSConfiguration.DMSDataClass = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+					if (dtDMS.Rows[i]["SourceValue"].ToString() == "FTSUpDateURL")
+					{
+						DMSConfiguration.FTSUpDateURL = dtDMS.Rows[i]["TargetValue"].ToString();
+					}
+				}
+
+				return DMSConfiguration;
+			}
+			catch (Exception ex)
+			{
+				return null;
+			}
+		}
+
+
+
+		public static DataTable Master_Config(String Key, bool GetAllConfig)
+		{
+			DataTable dt = new DataTable();
+			try
+			{
+				SqlConnection Conn;
+				string connection = ConfigurationManager.ConnectionStrings["ConnStringDMS"].ConnectionString;
+				Conn = new SqlConnection(connection);
+				SqlCommand cmd = new SqlCommand("sp_GetConfig", Conn);
+				cmd.Parameters.AddWithValue("@Key", Key);
+				cmd.Parameters.AddWithValue("@GetAllConfig", GetAllConfig);
+				cmd.CommandType = CommandType.StoredProcedure;
+				SqlDataAdapter da = new SqlDataAdapter(cmd);
+				da.Fill(dt);
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+			return dt;
+		}
+
+
+		public static DataTable GetDocToUpload()
+		{
+			DataTable dt = new DataTable("getProdDoc");
+			try
+			{
+				SqlConnection Conn;
+				string connection = ConfigurationManager.ConnectionStrings["ConnStringDMS"].ConnectionString;
+				Conn = new SqlConnection(connection);
+				Conn.Close();
+				Conn.Open();
+				SqlCommand cmd = new SqlCommand("sp_Get_Prod_DocToUpload", Conn);
+				cmd.CommandType = CommandType.StoredProcedure;
+				SqlDataAdapter da = new SqlDataAdapter(cmd);
+				da.Fill(dt);
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+			return dt;
+		}
+
+		public static DataTable GetDMSDocToUpload()
+		{
+			DataTable dt = new DataTable("getProdDMSDoc");
+			try
+			{
+				SqlConnection Conn;
+				string connection = ConfigurationManager.ConnectionStrings["ConnStringDMS"].ConnectionString;
+				Conn = new SqlConnection(connection);
+				Conn.Close();
+				Conn.Open();
+				SqlCommand cmd = new SqlCommand("sp_Get_Prod_DMS_DocToUpload", Conn);
+				cmd.CommandType = CommandType.StoredProcedure;
+				SqlDataAdapter da = new SqlDataAdapter(cmd);
+				da.Fill(dt);
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+			return dt;
+		}
+
+
+
+		public static bool IsValid(this DataTable DT)
+		{
+			return DT != null && DT.Rows.Count > 0;
+		}
+
+		public struct Mst_Config
+		{
+			public static string CurrentDMSInUse = "CurrentDMSInUse";
+		}
+
+	}
+
+	public class DMSConfiguration
+	{
+		public string DMSFilePath { get; set; }
+		public string ImpersonationPassword { get; set; }
+		public string ImpersonationIP { get; set; }
+		public string ImpersonationUserName { get; set; }
+		public string DMSViewDocumentPath { get; set; }
+		public string DMSWebService { get; set; }
+		public string DMSUser { get; set; }
+		public string DMSPass { get; set; }
+		public string DMSDataClass { get; set; }
+		public string FTSUpDateURL { get; set; }
+		public string OmniScanViewDocument { get; set; }
+		public string DMSDownloadApi { get; set; }
+	}
+
+	public class RegNStamps
+	{
+		public string SRO_Code { get; set; }
+		public string District_Code { get; set; }
+		public string MainType_Document { get; set; }
+		public string SubType_Document { get; set; }
+	}
+
+	public struct Mst_Config
+	{
+		public static string Law_Department = "Law_Department";
+		public static string ProductionDMS = "ProductionDMS";
+		public static string TestAadharNumber = "TestAadharNumber";
+		public static string StagingDMS = "StagingDMS";
+		public static string CurrentDMSInUse = "CurrentDMSInUse";
+	}
+
+	public struct LoggingProcess
+	{
+		//ReadingExcel/FileCopiedToTempLocation/SplitIntoPreviewFile/AddingMetaDataForTheRecord/AddingDMSParameterForTheRecord/AddingDMSParameterForThePreviewRecord
+		// Excel Name
+		public static string ReadingExcel = "ReadingExcel";
+		public static string NoOfRowsFromExcel = "NoOfRowsFromExcel";
+		// FileName,TempLoc,departmentName
+		public static string FileCopiedToTempLocation = "FileCopiedToTempLocation";
+		public static string SplitIntoPreviewFile = "SplitIntoPreviewFile";
+		public static string AddedMetaDataAndDMSParamsForTheRecord = "AddedMetaDataAndDMSParamsForTheRecord";
+		public static string AddingDMSParameterForTheRecord = "AddingDMSParameterForTheRecord";
+		public static string AddingDMSParameterForThePreviewRecord = "AddingDMSParameterForThePreviewRecord";
+		public static string ExcelRecordCouldNotSavedInDB = "ExcelRecordCouldNotSavedInDB";
+		//public static string ExcelRecordDocumentDoesNotExist = "ExcelRecordDocumentDoesNotExist";
+
+		public static string ExceptionOccured = "ExceptionOccured";
+		public static string SavingExcel = "SavingExcel";
+
+		public static string UploadToDMSStart = "UploadToDMSStart";
+		public static string RowsPulledForDMSUpload = "NoOfRowsPulledForDMSUpload";
+		public static string saveFileToDMSLocation = "saveFileToDMSLocation";
+		public static string CallingDMSWebService = "CallingDMSWebService";
+		public static string FileDoesNotExistTobiCopiedForDMS = "FileDoesNotExistTobiCopiedForDMS";
+		public static string DMSUploadProcessCompleted = "DMSUploadProcessCompleted";
+		public static string LoggingDMSOutput = "LoggingDMSOutput";
+		public static string LoggingInputXML = "LoggingInputXML";
+	}
+
+	public struct RegistrationNStamps
+	{
+		public const string SROCode = "SRO Code";
+		public const string DistrictCode = "District Code";
+		public const string MainTypeofDocument = "Main Type of Document";
+		public const string SubTypeofDocument = "Sub Type of Document";
+	}
+	public enum DocumentUploadType
+	{
+		BulkUtility = 1,
+		E_Gazette = 2,
+		DirectPublish = 3
+	}
+
+	public enum DocumentTypeForEmitra
+	{
+		Citizen = 1,
+		DocumentUpload = 2,
+		DDDocumentUpload = 3,
+		ChallanDocumentUpload = 4,
+
+	}
+
+	public enum ReviewStatus
+	{
+		Approved = 1,
+		Rejected = 2,
+		Published = 3,
+		Pending = 4
+	}
+
+}

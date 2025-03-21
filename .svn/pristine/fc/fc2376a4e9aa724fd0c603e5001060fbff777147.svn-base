@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="http://10.68.252.35:9080/RISLWS/DMSWebService_Raj/DMSWebServiceRaj.wsdl" filename="DMSWebService_Raj.wsdl" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="http://10.68.252.35:9080/RISLWS/DMSWebService_Raj/DMSWebServiceRaj_schema1.xsd" filename="DMSWebServiceRaj_schema1.xsd" />
+  </Results>
+</DiscoveryClientResultsFile>

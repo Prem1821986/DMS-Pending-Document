@@ -1,0 +1,812 @@
+﻿using DMS.Business;
+using DMS_WindowsService.BAL;
+using DMS_WindowsService.Common;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.ServiceProcess;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
+//using DMS_WindowsService.Models;
+using System.Xml.Linq;
+
+namespace DMS_WindowsService
+{
+    public partial class DMSWindowsService : ServiceBase
+    {
+        ServiceLog ServiceErrorLog = null;
+        UploadFileBL uploadBL = null;
+        //E_Archival_DMS_ThickClient_Service.ThickClientServiceClient thickClient = new E_Archival_DMS_ThickClient_Service.ThickClientServiceClient();
+
+        ThickClientService thickClient = null;
+        int NumOfThreads = 16;
+        public DMSWindowsService()
+        {
+            InitializeComponent();
+            ServiceErrorLog = new ServiceLog();
+            thickClient = new ThickClientService(Utility.constr);
+            NumOfThreads = 16;
+        }
+
+        public void OnDebug()
+        {
+            OnStart(null);
+        }
+
+        Thread T1 = null;
+
+        protected override void OnStart(string[] args)
+        {
+            ServiceErrorLog.ErrorLog("On Start", "DAILY", "", "", "", "OnStart");
+
+            T1 = new Thread(new ThreadStart(FirstThreadFunc));
+            FirstThreadFunc();
+            T1.Start();
+
+
+            //this.SaveExcelDataToDB(); // Excel file Data Upload
+            //this.UploadDocumentToDMS();
+            //this.UpdateData();
+
+            ServiceErrorLog.ErrorLog("On Start Executed", "DAILY", "", "", "", "OnStart");
+
+        }
+
+        private void FirstThreadFunc()
+        {
+            //this.UpdateData();
+
+            this.SaveExcelDataToDB(); // Excel file Data Upload
+            this.UploadDocumentToDMS(); // Excel file Data Upload            
+
+
+        }
+
+        protected override void OnStop()
+        {
+
+            ServiceErrorLog.ErrorLog("On Stop Executed", "DAILY", "", "", "", "OnStop");
+        }
+
+        private void WriteToFile(string text)
+        {
+            try
+            {
+                string path = AppDomain.CurrentDomain.BaseDirectory + "DMSServiceLog.txt";
+                using (StreamWriter writer = new StreamWriter(path, true))
+                {
+                    writer.WriteLine(string.Format(text, DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt")));
+                    writer.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceErrorLog.ErrorLog("WriteToFile", ex.Message, ex.StackTrace, "", "", "WriteToFile");
+            }
+        }
+
+        public void SaveExcelDataToDB()
+        {
+            try
+            {                
+                string ExcelFilePath = Utility.ReadExcelFilePath;
+                var ExcelFilePathDirectory = new DirectoryInfo(ExcelFilePath);
+                FileInfo[] ExcelFiles = ExcelFilePathDirectory.GetFiles();
+                List<DataRow> lstErrorRows = null;
+                List<DataRow> lstExecutedRows = null;
+                //string destinationPath = null;
+                //string sourcePath = null;
+                //string temporaryDocumentLoc = null;
+                string selectedFileName = string.Empty;
+                string selectedFileLocation = string.Empty;
+                DataTable DataTableFromExcel = new DataTable();
+
+
+                foreach (FileInfo selectedFile in ExcelFiles)
+                {
+                    try
+                    {
+                        ServiceErrorLog.ErrorLog(LoggingProcess.ReadingExcel, selectedFile.FullName, "", "", "", "SaveExcelDataToDB");
+
+                        selectedFileName = selectedFile.Name;
+                        selectedFileLocation = Common.Common.GetPathWithExcelFileName(selectedFileName); //ExcelFilePath + selectedFile.Name;
+
+                        lstErrorRows = new List<DataRow>();
+                        lstExecutedRows = new List<DataRow>();
+
+                        if (!string.IsNullOrEmpty(selectedFileLocation))
+                        {
+                            DataTableFromExcel = Common.Common.getDataTablefromExcel(selectedFileLocation, "Sheet1");
+                            if (DataTableFromExcel != null && DataTableFromExcel.Rows.Count > 0)
+                            {
+                                if (DataTableFromExcel.Columns.Contains("DepartmentName") && DataTableFromExcel.Columns.Contains("SubDepartmentName") && DataTableFromExcel.Columns.Contains("DocType"))
+                                {
+                                    uploadBL = new UploadFileBL();
+                                    if (uploadBL.CheckDocumentType(DataTableFromExcel))
+                                    {
+                                        var departments = (from a in DataTableFromExcel.AsEnumerable()
+                                                           select a.Field<string>("DepartmentName")).ToList().Distinct();
+
+                                        var subdepartments = (from a in DataTableFromExcel.AsEnumerable()
+                                                              select a.Field<string>("SubDepartmentName")).ToList().Distinct();
+
+                                        var documentTyps = (from a in DataTableFromExcel.AsEnumerable()
+                                                            select a.Field<string>("DocType")).ToList().Distinct();
+
+
+                                        string departmentName = departments.Select(a => a).FirstOrDefault();
+                                        string subDepartMent = subdepartments.Select(b => b).FirstOrDefault();
+                                        string documentTyp = documentTyps.Select(c => c).FirstOrDefault();
+
+                                        //Get all columns from database
+                                        List<string> dtColumns = uploadBL.GetColumns(departmentName, subDepartMent, documentTyp);
+                                        dtColumns.Remove("DocumentPath"); // Remove this column from validation part becoz not required - Parul
+                                        long docTypeId = uploadBL.GetDocType(departmentName, subDepartMent, documentTyp);
+                                        if (docTypeId != null && docTypeId > 0)
+                                        {
+                                            ServiceErrorLog.ErrorLog(LoggingProcess.NoOfRowsFromExcel, "Excel Name:", selectedFileName, "No Of Rows in Excel :", DataTableFromExcel.Rows.Count.ToString(), "SaveExcelDataToDB");
+                                            DataTableFromExcel.Columns.Add("Error"); // Add column for error in errorlog excel
+
+                                            for (int i = 0; i < 3; i++)
+                                            {
+                                                DataRow drRow = DataTableFromExcel.Rows[i];
+                                                WorkingOnDataRowWhileSavingExcelData(lstErrorRows, lstExecutedRows, departmentName, dtColumns, docTypeId, drRow, selectedFile.Name, documentTyp); 
+                                            }
+                                            //Parallel.For(0, DataTableFromExcel.Rows.Count, new ParallelOptions { MaxDegreeOfParallelism = NumOfThreads },
+                                            //    i =>
+                                            //    {
+
+                                            //        DataRow drRow = DataTableFromExcel.Rows[i];
+                                            //        WorkingOnDataRowWhileSavingExcelData(lstErrorRows, lstExecutedRows, departmentName, dtColumns, docTypeId, drRow, selectedFile.Name, documentTyp);
+                                            //    });
+
+                                            if (lstErrorRows.Count > 0)
+                                            {
+                                                dtColumns.Add("Error");
+
+                                                //write all error in one go into excel file
+                                                var dataArr = Common.Common.WriteArray(lstErrorRows, dtColumns);
+
+                                                string ErrorFilePathWithFileName = Common.Common.GetErrorPathWithExcelFileName(selectedFileName, string.Empty);
+                                                Common.Common.WriteErrorLogExcel(dataArr, ErrorFilePathWithFileName);
+
+                                                ServiceErrorLog.ErrorLog(LoggingProcess.SavingExcel, "Error Rows Log count", lstErrorRows.Count.ToString(), "", "", "SaveExcelDataToDB");
+                                                ////Common.Common.WriteErrorLogExcel(lstErrorRows, ErrorFilePathWithFileName); // OpenXML Used to write Error
+                                            }
+
+                                            if (lstExecutedRows.Count > 0)
+                                            {
+                                                if (!dtColumns.Contains("Error"))
+                                                {
+                                                    dtColumns.Add("Error");
+                                                }
+
+                                                var dataArr = Common.Common.WriteArray(lstExecutedRows, dtColumns);
+
+                                                string SuccessFilePathWithFileName = Common.Common.GetSuccessPathWithExcelFileName(selectedFileName);
+                                                Common.Common.WriteErrorLogExcel(dataArr, SuccessFilePathWithFileName);
+
+                                                ServiceErrorLog.ErrorLog(LoggingProcess.SavingExcel, "Succcess Rows Log count", lstExecutedRows.Count.ToString(), "", "", "SaveExcelDataToDB");
+
+                                                ////Common.Common.WriteErrorLogExcel(lstExecutedRows, SuccessFilePathWithFileName); // OpenXML Used to write Error
+                                            }
+                                        }
+                                        else
+                                        {
+                                            string ErrorFilePath = DataTableToErrorFile(selectedFileName, DataTableFromExcel);
+                                        }
+
+                                        //ServiceErrorLog.ErrorLog("Records have been uploaded successfully.", "", "", "", "", "SaveExcelDataToDB");
+                                    }
+                                    else
+                                    {
+                                        string ErrorFilePath = DataTableToErrorFile(selectedFileName, DataTableFromExcel);
+                                    }
+                                }
+                                else
+                                {
+                                    string ErrorFilePath = DataTableToErrorFile(selectedFileName, DataTableFromExcel);
+                                }
+                            }
+                            else
+                            {
+                                ServiceErrorLog.ErrorLog(LoggingProcess.ExcelRecordCouldNotSavedInDB, "Sheet name does not exist or No data to import", "Selected Excel File" + selectedFile, "", "", "SaveExcelDataToDB");
+                                return;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ServiceErrorLog.ErrorLog(LoggingProcess.ExceptionOccured, ex.Message, ex.StackTrace, "Excel File" + selectedFile, "", "SaveExcelDataToDB");
+                        string ErrorFilePath = DataTableToErrorFile(selectedFileName, DataTableFromExcel, ex.Message);
+                    }
+
+                    // Move Excel file to execute
+                    string l_ExecutedFilePath = Common.Common.GetExecutedPathWithExcelFileName(selectedFileName);
+                    System.IO.File.Move(selectedFileLocation, l_ExecutedFilePath);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ServiceErrorLog.ErrorLog("SaveExcelDataToDB", ex.Message, ex.StackTrace, "", "", "SaveExcelDataToDB");
+            }
+        }
+
+        private void WorkingOnDataRowWhileSavingExcelData(List<DataRow> lstErrorRows, List<DataRow> lstExecutedRows, string departmentName, List<string> dtColumns, long docTypeId, DataRow drRow, string argExcelFileName, string DocTypeName)
+        {
+            string destinationPath, sourcePath, temporaryDocumentLoc = null;
+            try
+            {
+                UploadFile uploadFile = new UploadFile();
+                List<UploadForms> lst = new List<UploadForms>();
+                destinationPath = ConfigurationManager.AppSettings["DocumentPathToSave"].ToString();
+                //string sourcePath = drRow["DocumentPath"].ToString(); // Need to change - Divya
+
+                sourcePath = Common.Common.GetSourcePath(departmentName, drRow);
+                //string l_FileNameFromExcel = Common.Common.RemoveSpecialChars(drRow[Utility.COL_NAME_EXCEL_DOCUMENT_NAME].ToString());
+                string l_FileNameFromExcel = (drRow[Utility.COL_NAME_EXCEL_DOCUMENT_NAME].ToString());
+
+                bool filecheck = Common.Common.CheckSpecialChars(l_FileNameFromExcel);
+                if (filecheck == true)
+                {
+                    string l_LocateDocumentForExcelRow = sourcePath + l_FileNameFromExcel;
+                    string FileExtension = System.IO.Path.GetExtension(l_FileNameFromExcel);
+
+                    if (File.Exists(l_LocateDocumentForExcelRow))
+                    {
+                        if (Directory.Exists(destinationPath))
+                        {
+                            FileInfo file = new FileInfo(System.IO.Path.GetFileName(l_LocateDocumentForExcelRow));
+                            string GuidAndFileName = Guid.NewGuid().ToString() + "_" + System.IO.Path.GetFileName(l_LocateDocumentForExcelRow).Replace(" ", "_");
+                            //File.Copy(sourcePath, destinationPath + GuidAndFileName); // Divya - dont want to copy file name
+                            //drRow["DocumentPath"] = destinationPath + GuidAndFileName; / /Commented Divya
+                            uploadFile.FileName = GuidAndFileName;
+                            temporaryDocumentLoc = destinationPath + GuidAndFileName;
+                            //dbDocumentPath + GuidAndFileName; // Commented for temporary loc // Should be the one for temp loc
+                            uploadFile.FilePath = temporaryDocumentLoc;//l_LocateDocumentForExcelRow; 
+                            uploadFile.FileContentType = Common.Common.GetMimeType(file);
+                            uploadFile.ActualFileName = Convert.ToString(drRow["Document Name"]);
+
+                            file = new FileInfo(l_LocateDocumentForExcelRow);
+                            uploadFile.FileSize = Common.Common.ToFileSize((long.Parse(file.Length.ToString())));
+                            uploadFile.DepartmentName = departmentName;
+
+                            File.Copy(l_LocateDocumentForExcelRow, temporaryDocumentLoc, true);
+
+                            //ServiceErrorLog.ErrorLog(LoggingProcess.FileCopiedToTempLocation,"File Name", l_FileNameFromExcel,"Temp Loc:", temporaryDocumentLoc, "WorkingOnDataRowWhileSavingExcelData");
+
+                            //Generate split preview file for main document -- parul
+                            if (FileExtension == ".pdf")
+                            {
+                                uploadFile.PreviewFileName = "Preview_" + GuidAndFileName;
+                                string temporaryPreviewDocumentLoc = destinationPath + uploadFile.PreviewFileName;
+                                PDFSplitAndSave(l_LocateDocumentForExcelRow, temporaryPreviewDocumentLoc, uploadFile.DepartmentName);
+
+                                //ServiceErrorLog.ErrorLog(LoggingProcess.SplitIntoPreviewFile, "File Name", uploadFile.PreviewFileName, "Temp Loc:", temporaryPreviewDocumentLoc,"WorkingOnDataRowWhileSavingExcelData");
+                            }
+                        }
+
+                        uploadFile.selDocType = docTypeId;
+                        uploadFile.isDownload = true;
+                        uploadFile.isPreview = true;
+                        uploadFile.isMove = true;
+
+                        lst = uploadBL.GetMetaDataList(dtColumns, drRow, departmentName);
+                        if (lst.Count > 0 && File.Exists(temporaryDocumentLoc))
+                        {
+                            // AddMetadata - Inserts record in UploadedDocumentDetails and MetaDataDetails table and returns inserted DocumentID 
+                            DataTable dt = thickClient.AddMetadata(Common.Common.ToDataTable(lst), uploadFile);
+                            //ServiceErrorLog.ErrorLog(LoggingProcess.AddingMetaDataForTheRecord, "File Name", l_FileNameFromExcel,"Excel Name", argExcelFileName,"WorkingOnDataRowWhileSavingExcelData");
+
+                            if (dt.Rows.Count > 0)
+                            {
+                                uploadFile.DocumentType = DMSDocumentType.DocumentUploadMain.ToString();// Doc type same as in website - Divya
+                                uploadFile.UploadParamID = int.Parse(dt.Rows[0][0].ToString());
+                                uploadFile.DMSDocID = 0;
+                                uploadFile.DocCategory = DocTypeName;
+                                uploadFile.DocActive = true;
+                                uploadFile.Param4 = Convert.ToInt32(DocumentUploadType.BulkUtility);//Uploaded by Bulk Utility
+                                uploadFile.Param5 = "N/A";
+
+                                //Insert Main Document Details for DMS retrival Parameters in DB
+                                thickClient.AddUpdateDMSDocumentDetails(uploadFile);
+                                ServiceErrorLog.ErrorLog(LoggingProcess.AddedMetaDataAndDMSParamsForTheRecord, "File Name", l_FileNameFromExcel, "Document ID", uploadFile.UploadParamID.ToString(), "WorkingOnDataRowWhileSavingExcelData");
+
+                                if (FileExtension == ".pdf")
+                                {
+                                    //Insert Preview Document Details for DMS retrival Parameters in DB
+                                    uploadFile.FileName = uploadFile.PreviewFileName;
+                                    uploadFile.DocumentType = DMSDocumentType.DocumentUploadPreview.ToString();// Doc type for Preview - Parul
+                                    thickClient.AddUpdateDMSDocumentDetails(uploadFile);
+
+                                    //ServiceErrorLog.ErrorLog(LoggingProcess.AddingDMSParameterForThePreviewRecord, "File Name", uploadFile.FileName, "Document ID", uploadFile.UploadParamID.ToString(), "WorkingOnDataRowWhileSavingExcelData");
+                                }
+
+                                lstExecutedRows.Add(drRow); //Add the executed row in db in list
+                            }
+                        }
+
+                        else
+                        {
+                            drRow["Error"] = Utility.DocTypeNotFound;
+                            lstErrorRows.Add(drRow);
+                            ServiceErrorLog.ErrorLog(LoggingProcess.ExcelRecordCouldNotSavedInDB, "File Name", l_FileNameFromExcel, "Excel Name", argExcelFileName, "WorkingOnDataRowWhileSavingExcelData");
+                        }
+                    }
+                    else
+                    {
+                        drRow["Error"] = Utility.DocumentNotFound;
+                        lstErrorRows.Add(drRow);
+                        ServiceErrorLog.ErrorLog(LoggingProcess.ExcelRecordCouldNotSavedInDB, "ExcelRecordDocumentDoesNotExist at", l_LocateDocumentForExcelRow, "Excel Name", argExcelFileName, "WorkingOnDataRowWhileSavingExcelData");
+                    }
+                }
+
+                else
+                {
+                    drRow["Error"] = "File Contain special character";
+                    lstErrorRows.Add(drRow);
+                    ServiceErrorLog.ErrorLog(LoggingProcess.ExcelRecordCouldNotSavedInDB, "File Name", l_FileNameFromExcel, "Excel Name", argExcelFileName, "WorkingOnDataRowWhileSavingExcelData");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                drRow["Error"] = ex.ToString();// used to add the error in the lsterrorRows - parul
+                lstErrorRows.Add(drRow);
+                ServiceErrorLog.ErrorLog(LoggingProcess.ExceptionOccured, ex.Message, ex.StackTrace, "Excel Name", argExcelFileName, "WorkingOnDataRowWhileSavingExcelData");
+            }
+        }
+
+        private string DataTableToErrorFile(string argFileName, DataTable DataTableFromExcel)
+        {
+            //ServiceErrorLog.ErrorLog("Mismatch between excel columns.", "", "", "", "", "SaveExcelDataToDB");
+            System.Data.DataColumn newColumn = new System.Data.DataColumn("Error", typeof(System.String));
+            newColumn.DefaultValue = "Column mismatch";
+            DataTableFromExcel.Columns.Add(newColumn);
+            //Move Excel File to Error Folder
+
+            string ErrorFilePath = Common.Common.GetErrorPathWithExcelFileName(argFileName, string.Empty);
+            Common.Common.ExportDataTableToExcel(DataTableFromExcel, ErrorFilePath);
+            ServiceErrorLog.ErrorLog("DataTableToErrorFile", "Data Exported to Excel", argFileName, "", "", "");
+            return ErrorFilePath;
+        }
+
+        private string DataTableToErrorFile(string argFileName, DataTable DataTableFromExcel, string argException)
+        {
+            ServiceErrorLog.ErrorLog("DataTableToErrorFile", "Some Error occured.", argFileName, argException, "", "");
+
+            System.Data.DataColumn newColumn = new System.Data.DataColumn("Error", typeof(System.String));
+            newColumn.DefaultValue = argException;
+            DataTableFromExcel.Columns.Add(newColumn);
+            //Move Excel File to Error Folder
+
+            string ErrorFilePath = Common.Common.GetErrorPathWithExcelFileName(argFileName, string.Empty);
+            Common.Common.ExportDataTableToExcel(DataTableFromExcel, ErrorFilePath);
+            return ErrorFilePath;
+        }
+
+        private void UploadDocumentToDMS()
+        {
+
+            ServiceErrorLog.ErrorLog(LoggingProcess.UploadToDMSStart, "", "", "", "", "");
+
+            List<DMSErrorLog> lstDMSErrorLogs = new List<DMSErrorLog>();
+            List<string> dtColumns = new List<string> { "DocID", "ErrorMsg", "DocType" };
+
+            int DocID = 0;
+            string DocTypeDMS = string.Empty;
+
+            DataTable dt = thickClient.GetDMSDocToUpload();
+
+            DMSConfiguration obDMS = Common.Common.GetDMSConfiguration();
+
+            if (dt.Rows.Count > 0)
+            {
+                ServiceErrorLog.ErrorLog(LoggingProcess.RowsPulledForDMSUpload, dt.Rows.Count.ToString(), "", "", "", "UploadDocumentToDMS");
+
+                var ObjRISL = new DMSWebService.DMSWebService_Raj();
+                ObjRISL.Url = obDMS.DMSWebService;
+
+                string DMSDocPath = obDMS.DMSFilePath.ToString();
+                WorkingOnDataRowForDMSUpload(lstDMSErrorLogs, dt, obDMS, ObjRISL, DMSDocPath, 0);
+                //Parallel.For(0, dt.Rows.Count, new ParallelOptions { MaxDegreeOfParallelism = NumOfThreads }, i =>
+                //{
+                //    WorkingOnDataRowForDMSUpload(lstDMSErrorLogs, dt, obDMS, ObjRISL, DMSDocPath, i);
+                //});
+
+                if (lstDMSErrorLogs.Count > 0)
+                {
+                    var dataArr = Common.Common.WriteArrayForDMSErrors(lstDMSErrorLogs, dtColumns);
+
+                    ////using OpenXML feature
+                    ////DataTable dtbl = new DataTable();
+                    ////dtbl = Common.Common.ListToDataTable(lstDMSErrorLogs);// Write DMS errors in Datatable
+
+                    string ErrorFilePathWithFileName = Common.Common.GetErrorPathWithExcelFileName("DMSUploadDocument.xls", "DMSError");
+                    Common.Common.WriteErrorLogExcel(dataArr, ErrorFilePathWithFileName);
+
+                    ////Common.Common.WriteErrorLogExcel(dtbl, ErrorFilePathWithFileName); // Write errors using OpenXML feature
+                }
+
+                ServiceErrorLog.ErrorLog(LoggingProcess.DMSUploadProcessCompleted, "", "", "", "", "UploadDocumentToDMS");
+                ObjRISL.Dispose();
+            }
+        }
+
+        private void WorkingOnDataRowForDMSUpload(List<DMSErrorLog> lstDMSErrorLogs, DataTable dt, DMSConfiguration obDMS, DMSWebService.DMSWebService_Raj ObjRISL, string DMSDocPath, int i)
+        {
+            int DocID = 0;
+            string DocTypeDMS = string.Empty;
+            try
+            {
+                DataRow dr = dt.Rows[i];
+                DocID = int.Parse(dr[Utility.COL_NAME_DOCUMENT_ID].ToString()); // Uploaded Document ID
+                string PreviewDocName = dr[Utility.COL_NAME_Preview_DOCUMENT_NAME].ToString(); // Preview_+Guid+FileName
+                //string DocName = dr[Utility.COL_NAME_DOC_TYPE].ToString() == DMSDocumentType.DocumentUploadMain.ToString() ? dr[Utility.COL_NAME_DOCUMENT_NAME].ToString(): PreviewDocName; // Guid+FileName
+                string DocName = dr[Utility.COL_NAME_DOC_NAME].ToString(); // Guid+FileName
+                DocTypeDMS = dr[Utility.COL_NAME_DOC_TYPE].ToString(); // Added by Divya
+
+                string DocumentPath = ConfigurationManager.AppSettings["DocumentPathToSave"].ToString() + DocName;
+
+                // Used for saving the file to DMS staging or production shared location
+                string l_errormsg = saveFileToDMSLocation(DocName, DMSDocPath, DocumentPath, DocID, obDMS);
+
+                if (!string.IsNullOrEmpty(l_errormsg))
+                {
+                    DMSErrorLog l_Err = new DMSErrorLog { DocID = DocID, ErrorMsg = l_errormsg, DocType = DocTypeDMS };
+                    lstDMSErrorLogs.Add(l_Err);
+                }
+
+                // Used for adding the document details to DMS staging or production server and get DMSDocumentID 
+                string l_ErrMsg = string.Empty;
+                string DMSDocID = AddDocumentDetailsToDMS(dr, ObjRISL, DMSDocPath, out l_ErrMsg, obDMS);
+
+                if (string.IsNullOrEmpty(DMSDocID) || DMSDocID == "0" || DMSDocID == "Document path does not exist.")//check for string message
+                {
+                    //l_ErrMsg = DMSDocID;
+                    DMSErrorLog l_Err = new DMSErrorLog { DocID = DocID, ErrorMsg = l_ErrMsg, DocType = DocTypeDMS };
+                    lstDMSErrorLogs.Add(l_Err);
+                    DMSDocID = "0";
+                }
+                else
+                {
+                    //Used to update the DMS document ID for UploadedDocumentDetails
+                    thickClient.UpdateDMSDocumentID(DocID, int.Parse(DMSDocID), 0, PreviewDocName);
+                    if (File.Exists(DocumentPath))
+                    {
+                        System.IO.File.Delete(DocumentPath);
+                    }
+                }
+
+                //to update DMSDocID in DMSDocumentDetails Table
+                UploadFile uploadFile = new UploadFile();
+                uploadFile.DMSDocID = int.Parse(DMSDocID);
+                uploadFile.UploadParamID = DocID;
+                uploadFile.DocumentType = DocTypeDMS;// Need to pass Doc type as well .. else it will insert rather update  - Divya
+                thickClient.AddUpdateDMSDocumentDetails(uploadFile); // Update the DMS ID for UPloadedDocumentID + DocType
+
+                //ServiceErrorLog.ErrorLog("UploadDocumentToDMS", "Update DMS Dod ID For record", "Updated Document ID -" + DocID, "Document Type :-" + DocTypeDMS, "", "");
+            }
+            catch (Exception ex)
+            {
+                DMSErrorLog l_Err = new DMSErrorLog { DocID = DocID, ErrorMsg = ex.Message, DocType = DocTypeDMS };
+                lstDMSErrorLogs.Add(l_Err);
+
+                ServiceErrorLog.ErrorLog(LoggingProcess.ExceptionOccured, ex.Message, ex.StackTrace, "DocumentID :", DocID.ToString(), "UploadDocumentToDMS");
+            }
+        }
+
+        private string saveFileToDMSLocation(string DocName, string DMSDocPath, string DocumentPath = "", int DocID = 0, DMSConfiguration obDMS = null)
+        {
+            string l_errormsg = string.Empty;
+            if (System.IO.File.Exists(DocumentPath))
+            {
+                try
+                {
+                    string ImpersonationUserName = string.Empty;
+                    string ImpersonationIP = string.Empty;
+                    string ImpersonationPassword = string.Empty;
+
+                    //string DMSFilePath = DMSDocPath + DocName;
+                    string DMSFilePath = obDMS.DMSFilePath + DocName;
+
+                    try
+                    {
+                        //System.IO.File.Copy(DocumentPath, DMSFilePath, true);
+                        using (new Impersonator(obDMS.ImpersonationUserName, obDMS.ImpersonationIP, obDMS.ImpersonationPassword))
+                        {
+                            // The following code is executed under the impersonated user.
+                            System.IO.File.Copy(DocumentPath, DMSFilePath, true);
+                            //ServiceErrorLog.ErrorLog(LoggingProcess.saveFileToDMSLocation, "Document ID :", DocID.ToString(), "source" + DocumentPath, "Target Path :" + DMSFilePath, "saveFileToDMSLocation");
+                        }
+                    }
+                    catch
+                    {
+                        //using (new Impersonator(obDMS.ImpersonationUserName, obDMS.ImpersonationIP, obDMS.ImpersonationPassword))
+                        //{
+                        //    // The following code is executed under the impersonated user.
+                        //    System.IO.File.Copy(DocumentPath, DMSFilePath, true);
+                        //    //ServiceErrorLog.ErrorLog(LoggingProcess.saveFileToDMSLocation, "Document ID :", DocID.ToString(), "source" + DocumentPath, "Target Path :" + DMSFilePath, "saveFileToDMSLocation");
+                        //}
+                    }
+                }
+                catch (Exception ex)
+                {
+                    l_errormsg = ex.Message;
+                    ServiceErrorLog.ErrorLog(LoggingProcess.ExceptionOccured, ex.Message, ex.StackTrace, "DocumentID", DocID.ToString(), "saveFileToDMSLocation");
+                }
+            }
+            else
+            {
+                // For PROD DMS Changes - 
+                ServiceErrorLog.ErrorLog(LoggingProcess.FileDoesNotExistTobiCopiedForDMS, DocumentPath, "DocumentID ", DocID.ToString(), "", "saveFileToDMSLocation");
+            }
+
+            return l_errormsg;
+        }
+
+
+        private string AddDocumentDetailsToDMS(DataRow dr, DMSWebService.DMSWebService_Raj ObjRISL, string DMSDocPath, out string argErrorMsg, DMSConfiguration obDMS = null)
+        {
+            string DMSDocID = string.Empty;
+
+            XDocument xmlDoc;
+
+            string sOutputXml = string.Empty;
+            int DocID = 0;
+            string sInputXML = string.Empty;
+            string base64xml = string.Empty;
+            DMSDocID = "0";
+
+            try
+            {
+
+                DocID = int.Parse(dr[Utility.COL_NAME_DOCUMENT_ID].ToString()); // Uploaded Document ID
+                string PreviewDocName = dr[Utility.COL_NAME_Preview_DOCUMENT_NAME].ToString(); // Preview_+Guid+FileName
+                string DocName = dr[Utility.COL_NAME_DOC_NAME].ToString(); // Guid+FileName
+                string DepartmentName = dr[Utility.COL_NAME_DEPARTMENT_NAME].ToString(); //DepartmentName 
+                string DocType = dr[Utility.COL_NAME_DOC_TYPE_NAME].ToString(); // Doc type name -
+                string DocTypeDMS = dr[Utility.COL_NAME_DOC_TYPE].ToString(); // Added by Divya
+
+                string folderName = DocType;
+                string folderHierarchy = DepartmentName;
+
+                sInputXML = @"<NGOAddDocument_Input>
+                            <Documents>
+                            <Document>
+                            <DocumentName>" + DocName.ToString() + @"</DocumentName>
+                            <DataDefinition>
+                            <Fields>
+                            <Field><IndexName>DepartmentName</IndexName><IndexValue>" + dr["DepartmentName"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>DocType</IndexName><IndexValue>" + dr["DocType"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>DocName</IndexName><IndexValue>" + dr["DocName"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>UniqueNumber</IndexName><IndexValue>" + dr["UniqueNumber"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>DocumentID</IndexName><IndexValue>" + dr["Id"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>Param1</IndexName><IndexValue>" + dr["Param1"] + "</IndexValue></Field>"
+                                      
+                                      + "<Field><IndexName>DocCategory</IndexName><IndexValue>" + dr["DocCategory"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>DocActive</IndexName><IndexValue>" + dr["DocActive"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>Param4</IndexName><IndexValue>" + dr["Param4"] + "</IndexValue></Field>"
+                                      + "<Field><IndexName>Param5</IndexName><IndexValue>" + dr["Param5"] + "</IndexValue></Field>"
+
+                                      + "</Fields>"
+                                      + "</DataDefinition>"
+                                      + "</Document>"
+                                      + "</Documents>"
+                                 + "</NGOAddDocument_Input>";
+
+
+                byte[] byt = System.Text.Encoding.UTF8.GetBytes(sInputXML);
+                //convert the byte array to a Base64 string
+                base64xml = Convert.ToBase64String(byt);
+
+                // Timestamp before service.
+                ServiceErrorLog.ErrorLog("Timestamp Before calling webservice.", "sOutputXml before Parsing : " + sInputXML.ToString(), "base64xml :", base64xml.ToString(), "TimeStamp" + DateTime.Now.ToString(), "DocumentID : " + DocID.ToString());
+
+                sOutputXml = ObjRISL.addNGDocumentExt(base64xml.ToString(), obDMS.DMSUser, obDMS.DMSPass, DMSDocPath, folderName, folderHierarchy, obDMS.DMSDataClass);
+
+                // Timestamp before service.
+                ServiceErrorLog.ErrorLog("Timestamp After calling webservice.", "sOutputXml before Parsing : " + sOutputXml.ToString(), "base64xml :", base64xml.ToString(), "TimeStamp" + DateTime.Now.ToString(), "DocumentID : " + DocID.ToString());
+
+                xmlDoc = XDocument.Parse(sOutputXml);
+                DMSDocID = xmlDoc.Descendants("NGAddDocumentExt_Output")
+                                .Descendants("Document")
+                                .Descendants("Document_Id")
+                                .FirstOrDefault().Value;
+
+                argErrorMsg = string.Empty;
+
+                ServiceErrorLog.ErrorLog(LoggingProcess.CallingDMSWebService, "DocumentID : " + DocID.ToString(), "DMS ID :", DMSDocID, "DMS Success", "AddDocumentDetailsToDMS");
+
+                return DMSDocID;
+            }
+            catch (Exception ex)
+            {
+                // logging in case of any error.
+                ServiceErrorLog.ErrorLog(LoggingProcess.LoggingInputXML, "InputXML : " + sInputXML.ToString(), "base64xml :", base64xml.ToString(), " Exception : " + ex.Message.ToString(), "DocumentID : " + DocID.ToString());
+
+
+
+                argErrorMsg = ex.Message;
+                //ServiceErrorLog.ErrorLog("AddDocumentDetailsToDMS", ex.Message, ex.StackTrace, "DocumentID-" + DocID, "", "Adding doc via DMS Service");
+                //ServiceErrorLog.ErrorLog(LoggingProcess.LoggingDMSOutput, sOutputXml, ex.StackTrace, "DocumentID : " + DocID, "DMS Failure", "logging of xml for outputxml");
+
+                xmlDoc = XDocument.Parse(sOutputXml);
+                argErrorMsg = argErrorMsg + " - " + xmlDoc.Descendants("NGAddDocumentExt_Output")
+                                .Descendants("Document")
+                                .Descendants("Description")
+                                .FirstOrDefault().Value;
+
+                ServiceErrorLog.ErrorLog(LoggingProcess.CallingDMSWebService, argErrorMsg, ex.StackTrace, "DocumentID : " + DocID, "DMS Failure", "AddDocumentDetailsToDMS");
+
+                DMSDocID = "0";
+
+            }
+            return DMSDocID;
+        }
+
+        public void PDFSplitAndSave(string inputPath, string outputPath, string department)
+        {
+            FileInfo file = new FileInfo(inputPath);
+
+            using (PdfReader pdfReader = new PdfReader(inputPath))
+            {
+                iTextSharp.text.Document document = new iTextSharp.text.Document();
+                PdfCopy pdfCopy = new PdfCopy(document, new FileStream(outputPath, FileMode.Create));
+                document.Open();
+                if (department == "Local Self Government")
+                {
+                    int startPage = Convert.ToInt32(ConfigurationManager.AppSettings["ajmerstartPagepdf"].ToString());
+                    int endPage = pdfReader.NumberOfPages >= Convert.ToInt32(ConfigurationManager.AppSettings["ajmerendPagepdf"].ToString()) ? Convert.ToInt32(ConfigurationManager.AppSettings["ajmerendPagepdf"].ToString()) : pdfReader.NumberOfPages;
+                    for (int pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+                    {
+                        ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                        string currentText = PdfTextExtractor.GetTextFromPage(pdfReader, pageNumber, strategy);
+
+                        pdfCopy.AddPage(pdfCopy.GetImportedPage(pdfReader, pageNumber));
+                    }
+
+                }
+                else
+                {
+
+                    int startPage = Convert.ToInt32(ConfigurationManager.AppSettings["startPagepdf"].ToString());
+                    int endPage = pdfReader.NumberOfPages >= Convert.ToInt32(ConfigurationManager.AppSettings["endPagepdf"].ToString()) ? Convert.ToInt32(ConfigurationManager.AppSettings["endPagepdf"].ToString()) : pdfReader.NumberOfPages;
+
+                    for (int pageNumber = startPage; pageNumber <= endPage; pageNumber++)
+                    {
+                        ITextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                        string currentText = PdfTextExtractor.GetTextFromPage(pdfReader, pageNumber, strategy);
+
+                        pdfCopy.AddPage(pdfCopy.GetImportedPage(pdfReader, pageNumber));
+                    }
+                }
+                document.Close();
+            }
+        }
+
+        #region FTS Related Function
+        /// <summary>
+        /// This will update the Existing records into the dms with all new parameters.
+        /// </summary>
+        private void UpdateData()
+        {
+            try
+            {
+                DMSConfiguration obDMS = Common.Common.GetDMSConfiguration();
+                FTSUpdate.DMSUpdateDocument DMSUpdateDocument = new FTSUpdate.DMSUpdateDocument();
+                DMSUpdateDocument.Url = obDMS.FTSUpDateURL;
+                DataTable dtTotalNumberofRecords = new DBMethodsCommon().GetTotalNumberOfRecord();
+                int TotalRecords = dtTotalNumberofRecords.Rows.Count > 0 ? Convert.ToInt32(dtTotalNumberofRecords.Rows[0]["Total"]) : 0;
+
+                int TotalRows = (TotalRecords / 1000) + 1;
+                for (int j = 0; j <= TotalRows; j++)
+                {
+                    var dt = new DBMethodsCommon().GetDataFromDMS(0);
+
+                    Parallel.For(0, dt.Rows.Count, new ParallelOptions { MaxDegreeOfParallelism = NumOfThreads }, m =>
+                    {
+                        WorkingOnFTSBulkUpdate(dt, m, DMSUpdateDocument);
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                ServiceErrorLog.ErrorLog("UpdateData", ex.Message, ex.StackTrace, "", "FTS Failure", "UpdateData");
+            }
+        }
+
+        private void WorkingOnFTSBulkUpdate(DataTable dt, int i, FTSUpdate.DMSUpdateDocument DMSUpdateDocument)
+        {
+            try
+            {
+                // Creating an object.
+                var obj = new DMSdetails();
+                obj.DocActive = Convert.ToString(dt.Rows[i]["DocActive"]);
+                obj.DepartmentName = Convert.ToString(dt.Rows[i]["DepartmentName"]);
+                obj.DmsDocId = Convert.ToString(dt.Rows[i]["DMSDocumentId"]);
+                obj.DocCategory = Convert.ToString(dt.Rows[i]["DocCategory"]);
+                obj.DocName = Convert.ToString(dt.Rows[i]["DocName"]);
+                obj.DocType = Convert.ToString(dt.Rows[i]["DocType"]);
+                obj.DocumentId = Convert.ToString(dt.Rows[i]["Id"]);  // Because we are passing tbl_DMSDocumentDetailsId as parameter in DMS.
+                obj.DocumentName = Convert.ToString(dt.Rows[i]["DocName"]);
+                obj.Param1 = Convert.ToString(dt.Rows[i]["Param1"]);
+                obj.Param4 = Convert.ToString(dt.Rows[i]["Param4"]);
+                obj.Param5 = Convert.ToString(dt.Rows[i]["Param5"]);
+                obj.UniqueNumber = Convert.ToString(dt.Rows[i]["UniqueNumber"]);
+
+                //Creating an InputXml
+                string XInputXml = createBase64(obj); //"XInputXml";//
+                                                      // Sending to DMS to update document with new parameters.
+                ServiceErrorLog.ErrorLog("WorkingOnFTSBulkUpdate", "InputXML:"+ XInputXml, "before WEbservicecalling", "", "FTS Failure", "WorkingOnFTSBulkUpdate");
+                string OutputXML = DMSUpdateDocument.updateDataclass(createBase64(obj), "fms_web", "fms@1234");// "OutputXML";// 
+                ServiceErrorLog.ErrorLog("WorkingOnFTSBulkUpdate", "OutputXML:" + OutputXML, "After WEbservicecalling", "", "FTS Failure", "WorkingOnFTSBulkUpdate");
+
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.LoadXml(OutputXML);
+                string json = JsonConvert.SerializeXmlNode(xmlDoc);
+                var data = JsonConvert.DeserializeObject<RootObject>(json);
+
+                // DMSUpdateDocument.updateDataclass(XInputXml, "fms_web", "fms@1234");
+                new DBMethodsCommon().Insert_tbl_DocumentUpdatedInDMSForFTS(Convert.ToInt32(obj.DmsDocId), Convert.ToInt32(obj.DocumentId), OutputXML, XInputXml, data.NGChangeDocumentProperty_Output.Document.Document_Name, data.NGChangeDocumentProperty_Output.Document.Document_Id, data.NGChangeDocumentProperty_Output.Document.Description);
+
+
+                // Need to deserialize the outputxml.
+
+            }
+            catch (Exception ex)
+            {
+                new DBMethodsCommon().Insert_tbl_DocumentUpdatedInDMSForFTS(Convert.ToInt32(dt.Rows[i]["DMSDocumentId"]), Convert.ToInt32(dt.Rows[i]["Id"]), ex.Message, "Exception from UpdateData");
+            }
+
+        }
+
+        private string createBase64(DMSdetails obj)
+        {
+            string test = @"<NGOChangeDocumentProperty_Input>
+                                <Documents>
+                                <Document>
+                                <DocumentName>" + obj.DocumentName + "</DocumentName>"
+                             + "<Document_Id>" + obj.DmsDocId + "</Document_Id>"
+                             + "<DataDefinition>"
+                                        + "<Fields>"
+                                        //+ "<Field><IndexName>DepartmentName</IndexName><IndexValue>" + obj.DepartmentName + "</IndexValue></Field>"
+                                        //+ "<Field><IndexName>DocType</IndexName><IndexValue>" + obj.DocType + "</IndexValue></Field>"
+                                        //+ "<Field><IndexName>DocName</IndexName><IndexValue>" + obj.DocName + "</IndexValue></Field>"
+                                        //+ "<Field><IndexName>UniqueNumber</IndexName><IndexValue>" + obj.UniqueNumber + "</IndexValue></Field>"
+                                        //+ "<Field><IndexName>DocumentID</IndexName><IndexValue>" + obj.DocumentId + "</IndexValue></Field>"
+                                        //+ "<Field><IndexName>Param1</IndexName><IndexValue>" + obj.Param1 + "</IndexValue></Field>"
+                                        + "<Field><IndexName>DocCategory</IndexName><IndexValue>" + obj.DocCategory + "</IndexValue></Field>"
+                                        + "<Field><IndexName>DocActive</IndexName><IndexValue>" + obj.DocActive + "</IndexValue></Field>"
+                                        + "<Field><IndexName>Param4</IndexName><IndexValue>" + obj.Param4 + "</IndexValue></Field>"
+                                        + "<Field><IndexName>Param5</IndexName><IndexValue>" + obj.Param5 + "</IndexValue></Field>"
+                                        + "</Fields>"
+                                        + @"</DataDefinition>
+                                </Document>
+                                </Documents>
+                                </NGOChangeDocumentProperty_Input>";
+
+            return new DBMethodsCommon().Base64Encode(test);
+        }
+
+
+
+
+        #endregion
+
+
+
+
+
+
+
+    }
+}
